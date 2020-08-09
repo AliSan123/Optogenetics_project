@@ -68,7 +68,7 @@ font: 8pt &quot;Eras Medium ITC&quot;;
 </string>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -1410,7 +1410,7 @@ background-color: rgb(0, 153, 255,50);</string>
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>1111</width>
+          <width>1291</width>
           <height>801</height>
          </rect>
         </property>
@@ -1731,6 +1731,12 @@ color: rgb(0, 170, 0);</string>
            <property name="icon">
             <iconset resource="../../icons.qrc">
              <normaloff>:/Icons/QTIcons/RunArrow.png</normaloff>:/Icons/QTIcons/RunArrow.png</iconset>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>40</width>
+             <height>40</height>
+            </size>
            </property>
            <property name="checkable">
             <bool>false</bool>
