@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1012</width>
-    <height>500</height>
+    <height>582</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -30,10 +30,16 @@ background-color: rgb(255, 255, 255);</string>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <widget class="QTextBrowser" name="textBrowser_49">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="maximumSize">
       <size>
        <width>16777215</width>
-       <height>100</height>
+       <height>70</height>
       </size>
      </property>
      <property name="styleSheet">
@@ -51,8 +57,33 @@ p, li { white-space: pre-wrap; }
      </property>
     </widget>
    </item>
+   <item alignment="Qt::AlignHCenter">
+    <widget class="QLabel" name="label_173">
+     <property name="maximumSize">
+      <size>
+       <width>180</width>
+       <height>60</height>
+      </size>
+     </property>
+     <property name="text">
+      <string/>
+     </property>
+     <property name="pixmap">
+      <pixmap resource="../../icons.qrc">:/Icons/QTIcons/Py2Pulse Logo.PNG</pixmap>
+     </property>
+     <property name="scaledContents">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
    <item>
     <widget class="QTextBrowser" name="textBrowser_17">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -86,9 +117,9 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -113,18 +144,18 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -142,9 +173,9 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -169,18 +200,18 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -198,9 +229,9 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Button">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -225,18 +256,18 @@ p, li { white-space: pre-wrap; }
         </colorrole>
         <colorrole role="Base">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
         </colorrole>
         <colorrole role="Window">
          <brush brushstyle="SolidPattern">
-          <color alpha="255">
-           <red>255</red>
-           <green>255</green>
+          <color alpha="50">
+           <red>0</red>
+           <green>153</green>
            <blue>255</blue>
           </color>
          </brush>
@@ -250,8 +281,12 @@ p, li { white-space: pre-wrap; }
      <property name="toolTipDuration">
       <number>0</number>
      </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
       <string notr="true">font: 12pt &quot;Eras Medium ITC&quot;;
+background-color: rgba(0, 153, 255, 50);
 border-color: rgb(17, 53, 196);</string>
      </property>
      <property name="text">
@@ -277,8 +312,11 @@ border-color: rgb(17, 53, 196);</string>
      <property name="toolTipDuration">
       <number>0</number>
      </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;Eras Medium ITC&quot;;</string>
+      <string notr="true">font: 12pt &quot;Eras Medium ITC&quot;;background-color: rgba(0, 153, 255, 50);</string>
      </property>
      <property name="text">
       <string>Laser Manual</string>
@@ -297,8 +335,11 @@ border-color: rgb(17, 53, 196);</string>
      <property name="toolTipDuration">
       <number>0</number>
      </property>
+     <property name="autoFillBackground">
+      <bool>false</bool>
+     </property>
      <property name="styleSheet">
-      <string notr="true">font: 12pt &quot;Eras Medium ITC&quot;;</string>
+      <string notr="true">font: 12pt &quot;Eras Medium ITC&quot;;background-color: rgba(0, 153, 255, 50);</string>
      </property>
      <property name="text">
       <string>Experimental Report</string>

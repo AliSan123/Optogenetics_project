@@ -1,9 +1,14 @@
 from PyQt5 import QtWidgets, uic, QtGui
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from icons import *
-#from tkinter import tk
 import sys
 import webbrowser
+import os
+import datetime
+import pandas as pd
+import numpy as np
+#import Coherent
+
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
@@ -16,9 +21,23 @@ class Ui(QtWidgets.QMainWindow):
         self.SetupButton.clicked.connect(self.GoToSetupTab)
 
 #       SETUP TAB
-        self.BrowseButton1.clicked.connect(self.SelectProjectFolder)           
-        #self.BrowseButton2.clicked.connect(self.UploadCalibrationFile)
+        self.BrowseButton1.clicked.connect(self.SelectProjectFolder) 
+        self.set1.clicked.connect(self.SetProjectDirectory)
+        self.CreateExpFolder.clicked.connect(self.clickedCreateExpFolder)
+        self.set2.clicked.connect(self.SetExpDirectory)
+        self.CreateDailyFolder.clicked.connect(self.clickedCreateDailyFolder)
+        self.set3.clicked.connect(self.SetDailyDirectory)
+        self.CreateTimeFolder.clicked.connect(self.clickedCreateTimeFolder)
+        self.set4.clicked.connect(self.SetTimeDirectory)
+        self.BrowseButton2.clicked.connect(self.UploadCalibrationFile)
+        self.NextButton.clicked.connect(self.GoToPowerCalibration)
 
+#       POWER CALIBRATION TAB
+        #self.CalTimeSpinBox.valueChanged.connect(self.valuechange)
+        
+               
+        self.RunButton.clicked.connect(self.OpenSafetyWindow)
+        
 #       HOME SCREEN  
     def OpenTermsOfUse(self):
         TOU=TermsOfUse()
@@ -35,36 +54,102 @@ class Ui(QtWidgets.QMainWindow):
 
 #       SETUP TAB
     def SelectProjectFolder(self):
-        dialog=QFileDialog.getExistingDirectory(self,'Open Directory','Project Folder',QFileDialog.ShowDirsOnly)
-        self.lineEditDirectory.setText(dialog)
+        FolderDirectory=QFileDialog.getExistingDirectory(self,'Open Directory','Project Folder',QFileDialog.ShowDirsOnly)
+        self.lineEditDirectory.setText(FolderDirectory)
         # create subfolders within this: experiments; daily dates
     
-    # def UploadCalibrationFile(self):
-#        fileName=QFileDialog.getOpenFileName(self,'Select File','Calibration File','DAT Files (*.dat)')
-        # open the file 
-        # change directories
-        # save the file
-    #     self.file_save()
+    def SetProjectDirectory(self):
+        FolderDirectory=self.lineEditDirectory.text() #in case the user edits the directory
+        os.chdir(FolderDirectory)
+        self.set1.setStyleSheet("font: 8pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        return FolderDirectory
     
-    # def file_open(self):
-    #     name = QFileDialog.getOpenFileName(self, 'Open File')
-    #     file = open(name,'r')
+    def createFolder(self,directory):
+        try: 
+            if not os.path.exists(directory):
+                os.makedirs(directory)
+        except OSError:
+            print('Error creating folder' + directory)  
     
-    #     self.editor()
-    
-    #     with file:
-    #         text = file.read()
-    #         self.textEdit.setText(text)
-    
-    # def file_save(self):
-    #     name = QFileDialog.getSaveFileName(self, 'Save File')
-    #     file = open(name,'w')
-    #     text = self.textEdit.toPlainText()
-    
-    #     file.write(text)
-    #     file.close()
-        # self.lineEditFile.setText(str(fileName))
+    def clickedCreateExpFolder(self):
+        self.createFolder('./Experiments/')
+        ExperimentsDirectory=os.getcwd()+'\Experiments'
+        self.lineEditDirectory_2.setText(ExperimentsDirectory)
 
+    def SetExpDirectory(self):
+        ExperimentsDirectory=self.lineEditDirectory_2.text()
+        os.chdir(ExperimentsDirectory)
+        self.set2.setStyleSheet("font: 8pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        return ExperimentsDirectory
+    
+    def clickedCreateDailyFolder(self):
+        self.createFolder(datetime.datetime.now().strftime('%Y-%m-%d'))
+        DailyDirectory=os.getcwd() + datetime.datetime.now().strftime('\%Y-%m-%d')
+        self.lineEditDirectory_3.setText(DailyDirectory)
+        
+    def SetDailyDirectory(self):
+        DailyDirectory=self.lineEditDirectory_3.text()
+        os.chdir(DailyDirectory)
+        self.set3.setStyleSheet("font: 8pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        return DailyDirectory    
+    
+    def clickedCreateTimeFolder(self):
+        self.createFolder(datetime.datetime.now().strftime('%Y-%m-%d_%Hh%Mm%S'))
+        TimeDirectory=os.getcwd() + datetime.datetime.now().strftime('\%Y-%m-%d_%Hh%Mm%S')
+        self.lineEditDirectory_4.setText(TimeDirectory)
+    
+    def SetTimeDirectory(self):
+        TimeDirectory=self.lineEditDirectory_4.text()
+        os.chdir(TimeDirectory)
+        self.set4.setStyleSheet("font: 8pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        return TimeDirectory         
+        
+    def UploadCalibrationFile(self):
+        calibration_fname,_filter=QFileDialog.getOpenFileName(self, 'Upload File')
+        input_file=np.loadtxt(str(calibration_fname))
+        output_df=pd.DataFrame(input_file)
+        self.SetDailyDirectory() #change directory to saving location
+        Filedirectory='power_calibration_980nm_8um_spot -' + datetime.datetime.now().strftime('%Y-%m-%d') + '.dat'
+        output_df.to_csv(Filedirectory)
+        self.lineEditFile.setText(os.getcwd() + '\'' + Filedirectory)
+        
+        self.NextButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.NextButton.setIcon(icon)
+
+    def GoToPowerCalibration(self):
+        self.tabWidget.setCurrentIndex(2)
+
+#       POWER CALIBRATION
+    def OpenSafetyWindow(self):
+        SW=SafetyWindow()
+        SW.exec_()
+        
+        
+class SafetyWindow(QDialog):
+    def __init__(self):
+        super(SafetyWindow,self).__init__()
+        uic.loadUi('SafetyWindow.ui',self)
+    
+        self.checkBoxKeyswitch.stateChanged.connect(self.ChangeColour)
+        self.LaserManualButton2.clicked.connect(self.OpenLaserManual)
+        #self.SWRunButton.clicked.connect(self.StartLaser)   
+        
+    def ChangeColour(self):          
+        if self.checkBoxIsSafe.isChecked() and self.checkBoxKeyswitch.isChecked():
+            self.SWRunButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+            icon = QtGui.QIcon()
+            icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+            self.SWRunButton.setIcon(icon)
+    
+    def OpenLaserManual(self):
+        path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
+        webbrowser.open(path)
+                  
+    def StartLaser(self):
+        print('Start laser')
+    
 # Terms of use pop-up box
 class TermsOfUse(QDialog):
     def __init__(self):
