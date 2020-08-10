@@ -2,8 +2,6 @@
 # Last edited:      09/08/2020
 
 import serial 
-import time
-import datetime
 
 class Arduino:
     '''
@@ -29,28 +27,14 @@ class Arduino:
         '''
 
         for i in range(n_times):
-            self.TTL_on()
-            time_on=datetime.datetime.now()
-            print(time_on)
-            self.TTL_sleep(pulse_duration_ms)
-            self.TTL_off()
-            time_off=datetime.datetime.now()
-            print(time_off)
-            self.TTL_sleep(time_betw_pulses_ms)
+            self.__write__('HI'+ str(pulse_duration_ms)) # Send HI ('HIGH'='ON'); integer in milliseconds
+            self.__readline__() # Read the serial message response
+            
+            self.__write__('LO'+ str(time_betw_pulses_ms)) # Send an L ('LOW'='OFF')
+            self.__readline__() # Read response  
             
         self.arduino_port.close()
         
-    def TTL_on(self):
-        self.__write__('1') # Send a 1 ('ON')
-        self.__readline__() # Read the serial message response
-     
-    def TTL_off(self):
-        self.__write__('0') # Send a 0 ('OFF')
-        self.__readline__() # Read repsonse
-    
-    def TTL_sleep(self,sleep_time_in_ms):
-        time.sleep(sleep_time_in_ms/1000) # converts from ms to s       
-
     def __write__(self,command):
         '''
         This function writes a serial command and prints what is sent to screen.
@@ -68,5 +52,5 @@ class Arduino:
         return msg  
 
 arduino=Arduino('COM3',9600)
-arduino.TTL_sequence(pulse_duration_ms=1000,time_betw_pulses_ms=500,n_times=10)
+arduino.TTL_sequence(pulse_duration_ms=250,time_betw_pulses_ms=500,n_times=10)
 
