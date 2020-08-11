@@ -22,14 +22,6 @@ class Coherent:
         self.test=test 
         self.baudrate=baudrate #factory settings 19200 are default (Manual page 6-6)
         
-        #self.keyswitch_position=keyswitch_position
-        #self.MRR=MRR
-        #self.PW=PW
-        #self.RRDivisor=RRDivisor
-        #self.PulsesPerMBurst=PulsesPerMBurst 
-        #self.energy=energy
-        
-
         self.serial_port=serial.Serial(serial_port,baudrate)
         self.__readline__()           
    
