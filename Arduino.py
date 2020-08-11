@@ -2,6 +2,7 @@
 # Last edited:      09/08/2020
 
 import serial 
+import time
 
 class Arduino:
     '''
@@ -16,25 +17,28 @@ class Arduino:
     def __init__(self, arduino_port,baudrate):
         #initialise a serial port (name of port, baudrate).
         self.baudrate=baudrate
-        self.arduino_port = serial.Serial(arduino_port,baudrate) # open and close port later
-        
-    def TTL_sequence(self,pulse_duration_ms,time_betw_pulses_ms,n_times):
+        self.arduino_port = serial.Serial(arduino_port,baudrate) 
+        self.__readline__() # Read the initial serial message response
+       
+    def TTL_sequence(self,pulse_duration_ms,n_times,min_time_off):
         '''
-        This function defines the pulse sequence.
-        1) TTL on for pulse_duration
-        2) TTL off for time_betw_pulses_ms
-        3) On and Off repeated n_times
+        This function encodes the pulse sequence in the Arduino_sketch.ino.
+        In a single loop:
+        TTL on for pulse_duration, confirm command completed, 
+        then TTL off for arbitrary time, confirm off
+        Variables:
+        pulse_duration_ms = the delay timefor which TTL=HIGH
+        n_times = the number of loops of on-off sequences (multiple "shots" at once after cells recover)
+        min_time_off = the minimum time for which the TTL=LOW before starting loop again. 
+                        (minimum because there is error associated with the processing time)
         '''
 
         for i in range(n_times):
-            self.__write__('HI'+ str(pulse_duration_ms)) # Send HI ('HIGH'='ON'); integer in milliseconds
+            self.__write__(str(pulse_duration_ms)) # Send integer in milliseconds
             self.__readline__() # Read the serial message response
+            self.__readline__() 
+            time.sleep(min_time_off) #this will have a relatively large error associatd with it
             
-            self.__write__('LO'+ str(time_betw_pulses_ms)) # Send an L ('LOW'='OFF')
-            self.__readline__() # Read response  
-            
-        self.arduino_port.close()
-        
     def __write__(self,command):
         '''
         This function writes a serial command and prints what is sent to screen.
@@ -49,8 +53,11 @@ class Arduino:
         '''
         ans=self.arduino_port.readline() #read serial message
         msg=ans.decode('utf-8') #prints serial message to screen
-        return msg  
-
-arduino=Arduino('COM3',9600)
-arduino.TTL_sequence(pulse_duration_ms=250,time_betw_pulses_ms=500,n_times=10)
-
+        print(msg)
+    
+    def close_port(self):
+        self.arduino_port.close()
+        
+arduino=Arduino('COM3',9600) #open the port
+arduino.TTL_sequence(pulse_duration_ms=5000,n_times=3)
+arduino.close_port()
