@@ -7,14 +7,14 @@ import os
 import datetime
 import pandas as pd
 import numpy as np
-#import Coherent
-
+import Coherent
+import Arduino
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):
         super(Ui,self).__init__() #call the inherited classes __init__method
         uic.loadUi('MainApp.ui',self) # Load the .ui file
-
+        
 #       HOME SCREEN      
         self.TCs_button1.clicked.connect(self.OpenTermsOfUse)
         self.read_checkbox.clicked.connect(self.SetupColourtoGreen)
@@ -33,10 +33,10 @@ class Ui(QtWidgets.QMainWindow):
         self.NextButton.clicked.connect(self.GoToPowerCalibration)
 
 #       POWER CALIBRATION TAB
-        #self.CalTimeSpinBox.valueChanged.connect(self.valuechange)
-        
-               
+        self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst,self.energy_in_percent,self.pulse_duration_ms,self.n_times,self.steps=self.getCalData()
+        self.ui=SafetyWindow(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst,self.energy_in_percent,self.pulse_duration_ms,self.n_times,self.steps)    
         self.RunButton.clicked.connect(self.OpenSafetyWindow)
+
         
 #       HOME SCREEN  
     def OpenTermsOfUse(self):
@@ -125,16 +125,46 @@ class Ui(QtWidgets.QMainWindow):
     def OpenSafetyWindow(self):
         SW=SafetyWindow()
         SW.exec_()
+    
+    def getCalData(self):
+        #Repetition rate parameters
+        combo_txt=self.comboBox.currentText()
+        combo_lst=combo_txt.split(", ")
+        MRR_in_kHz=combo_lst[0]
+        PW_in_fs=combo_lst[1]
+        RRDivisor=combo_lst[2]
+        PulsesPerMBurst=combo_lst[3]
+        # energy params
+        min_energy_in_percent=self.energy_spinbox.value()
+        max_energy_in_percent=self.energy_spinbox_2.value()
+        steps=self.energy_spinbox_3.value()
+        energy_in_percent=(max_energy_in_percent-min_energy_in_percent)/steps #"delta" -change in energy with each ramp up
+        n_times=self.energy_spinbox_4.value()
         
+        pulse_duration_ms=self.CalTimeSpinBox.value()
+        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_in_percent,pulse_duration_ms,n_times,steps
         
 class SafetyWindow(QDialog):
-    def __init__(self):
+    def __init__(self,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_in_percent,pulse_duration_ms,n_times,steps):
         super(SafetyWindow,self).__init__()
         uic.loadUi('SafetyWindow.ui',self)
-    
+        
+        self.MRR_in_kHz=MRR_in_kHz
+        self.PW_in_fs=PW_in_fs
+        self.RRDivisor=RRDivisor
+        self.PulsesPerMBurst=PulsesPerMBurst
+        self.energy_in_percent=energy_in_percent
+        self.pulse_duration_ms=pulse_duration_ms
+        self.n_times=n_times
+        self.steps=steps
+        
+        self.Coherent=Coherent.Coherent('COM1',9600,False)
+        self.Arduino=Arduino.Arduino('COM3',9600)
+        
         self.checkBoxKeyswitch.stateChanged.connect(self.ChangeColour)
-        self.LaserManualButton2.clicked.connect(self.OpenLaserManual)
-        #self.SWRunButton.clicked.connect(self.StartLaser)   
+        self.LaserManualButton2.clicked.connect(self.OpenLaserManual) 
+        self.SWRunButton.clicked.connect(self.StartLaserCalibration)
+        self.close_ports()
         
     def ChangeColour(self):          
         if self.checkBoxIsSafe.isChecked() and self.checkBoxKeyswitch.isChecked():
@@ -147,9 +177,21 @@ class SafetyWindow(QDialog):
         path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
         webbrowser.open(path)
                   
-    def StartLaser(self):
-        print('Start laser')
+    def StartLaserCalibration(self,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_in_percent,pulse_duration_ms,n_times,steps):
+        self.Coherent.startup()
+        self.Coherent.set_MRR(MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst)
+        for i in range(steps):
+            print(energy_in_percent*(i+1))
+            self.Coherent.set_energy(energy_in_percent*(i+1))
+            self.Coherent.start_lasing()            
+            self.Arduino.TTL_sequence(pulse_duration_ms, n_times, min_time_off=0)
+        self.Coherent.stop_lasing()
+        
     
+    def close_ports(self):
+        self.Coherent.close_port()
+        self.Arduino.close_port()
+        
 # Terms of use pop-up box
 class TermsOfUse(QDialog):
     def __init__(self):
@@ -178,3 +220,4 @@ app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplic
 window = Ui() # Create an instance of our class
 window.show()
 app.exec_() # Start the application
+

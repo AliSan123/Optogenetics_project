@@ -81,18 +81,14 @@ class Coherent:
         
         """  
         self.__write__('L=1')   # Turn on diodes - they will ramp to set current in ~30s, allow >45 min to achieve operating temperature
-        time.sleep(40)
+        print("Wait 30s to ramp up")
+        time.sleep(30)
         self.__write__('?ST') 
-        query=self.__readline__()
-        
-        while not query=="ON":
-            self.__write__('?ST') 
-            query=self.__readline__()
-        
-        self.__write__('PC=1')        # Turn on pulses, no response
-        
-        self.__write__('S=1')         # Open Shutter, shutter indicator will light on the power supply front panel
-    
+        self.__readline__()
+
+        self.__write__('PC=1')# Turn on pulses, no response
+        self.__write__('S=1') # Open Shutter, shutter indicator will light on the power supply front panel
+           
     def stop_lasing(self):
         self.__write__('S=0')    #Closes the shutter and turns off pulsing
     
@@ -120,4 +116,6 @@ laser=Coherent('COM3',9600,test=True)
 laser.startup()
 laser.set_MRR(500,50)
 laser.set_energy(0.5)
+laser.start_lasing()
+laser.stop_lasing()
 laser.close_port()

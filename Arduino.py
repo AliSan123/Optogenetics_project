@@ -58,6 +58,6 @@ class Arduino:
     def close_port(self):
         self.arduino_port.close()
         
-arduino=Arduino('COM3',9600) #open the port
-arduino.TTL_sequence(pulse_duration_ms=5000,n_times=3)
-arduino.close_port()
+# arduino=Arduino('COM3',9600) #open the port
+# arduino.TTL_sequence(pulse_duration_ms=5000,n_times=3,min_time_off=0)
+# arduino.close_port()
