@@ -17,9 +17,11 @@ class Arduino:
     def __init__(self, arduino_port,baudrate):
         #initialise a serial port (name of port, baudrate).
         self.baudrate=baudrate
-        self.arduino_port = serial.Serial(arduino_port,baudrate) 
-        self.__readline__() # Read the initial serial message response
-       
+        self.arduino_port = arduino_port
+        self.ser=self.open_port()
+        self._readline_() # Read the initial serial message response
+        
+        
     def TTL_sequence(self,pulse_duration_ms,n_times,min_time_off):
         '''
         This function encodes the pulse sequence in the Arduino_sketch.ino.
@@ -34,30 +36,35 @@ class Arduino:
         '''
 
         for i in range(n_times):
-            self.__write__(str(pulse_duration_ms)) # Send integer in milliseconds
-            self.__readline__() # Read the serial message response
-            self.__readline__() 
+            self._write_(str(pulse_duration_ms)) # Send integer in milliseconds
+            self._readline_() # Read the serial message response
+            self._readline_() 
             time.sleep(min_time_off) #this will have a relatively large error associatd with it
             
-    def __write__(self,command):
+    def _write_(self,command):
         '''
         This function writes a serial command and prints what is sent to screen.
         comman: (str) serial command to be sent     
         '''
-        self.arduino_port.write(command.encode('utf-8'))
+        self.ser.write(command.encode('utf-8'))
         print(f'Sent: {command}')
 
-    def __readline__(self):
+    def _readline_(self):
         '''
         This function reads the serial message and prints message to screen.
         '''
-        ans=self.arduino_port.readline() #read serial message
+        ans=self.ser.readline() #read serial message
         msg=ans.decode('utf-8') #prints serial message to screen
         print(msg)
     
+    def open_port(self):
+        ser=serial.Serial(self.arduino_port,self.baudrate) 
+        return ser
+    
     def close_port(self):
-        self.arduino_port.close()
-        
-# arduino=Arduino('COM3',9600) #open the port
-# arduino.TTL_sequence(pulse_duration_ms=5000,n_times=3,min_time_off=0)
-# arduino.close_port()
+        self.ser.close()
+
+if __name__=='__main__':        
+    arduino=Arduino('COM3',9600) 
+    arduino.TTL_sequence(pulse_duration_ms=5000,n_times=3,min_time_off=0)
+    arduino.close_port()

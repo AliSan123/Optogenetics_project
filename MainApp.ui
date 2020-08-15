@@ -68,7 +68,7 @@ font: 8pt &quot;Eras Medium ITC&quot;;
 </string>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -1416,7 +1416,7 @@ background-color: rgb(0, 153, 255,50);</string>
         </property>
         <layout class="QGridLayout" name="gridLayout_14" rowstretch="0,0,0,0,0,0,0,0,0">
          <item row="7" column="4">
-          <widget class="QPushButton" name="pushButton_6">
+          <widget class="QPushButton" name="setParams">
            <property name="maximumSize">
             <size>
              <width>300</width>
@@ -1746,7 +1746,7 @@ p, li { white-space: pre-wrap; }
              </property>
              <item>
               <property name="text">
-               <string>500, 280, 1, 1</string>
+               <string>500,280,1,1</string>
               </property>
              </item>
              <item>

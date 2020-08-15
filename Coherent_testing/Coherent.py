@@ -117,11 +117,13 @@ class Coherent:
         
     def close_port(self):
         self.serial_port.close()
-        
-# laser=Coherent('COM3',9600,test=True)
-# laser.startup()
-# laser.set_MRR(500,50)
-# laser.set_energy(0.5)
-# laser.start_lasing()
-# laser.stop_lasing()
-# laser.close_port()
+
+if __name__=='__main__':
+
+    laser=Coherent('COM3',9600,test=True)
+    laser.startup()
+    laser.set_MRR(500,50)
+    laser.set_energy(0.5)
+    laser.start_lasing()
+    laser.stop_lasing()
+    laser.close_port()
