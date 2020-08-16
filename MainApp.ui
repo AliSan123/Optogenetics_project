@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1386</width>
-    <height>914</height>
+    <width>1388</width>
+    <height>921</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -1538,6 +1538,9 @@ p, li { white-space: pre-wrap; }
                <height>16777215</height>
               </size>
              </property>
+             <property name="minimum">
+              <number>1</number>
+             </property>
              <property name="value">
               <number>1</number>
              </property>
@@ -1789,6 +1792,9 @@ p, li { white-space: pre-wrap; }
              <property name="decimals">
               <number>1</number>
              </property>
+             <property name="minimum">
+              <double>1.000000000000000</double>
+             </property>
              <property name="maximum">
               <double>20.000000000000000</double>
              </property>
@@ -1819,6 +1825,9 @@ p, li { white-space: pre-wrap; }
              </property>
              <property name="decimals">
               <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>1.000000000000000</double>
              </property>
              <property name="maximum">
               <double>50000.000000000000000</double>

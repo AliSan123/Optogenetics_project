@@ -5,15 +5,17 @@ import numpy as np
 
 def load_ephys(path,lazy = False):
     reader = neo.io.Spike2IO(path)
-    bl = reader.read(lazy = lazy)[0]
-    return bl
+    file = reader.read(lazy = lazy)[0]
+    return file
 
-def plot_data(X,Y,Xlabel,Ylabel,title,subplot=111):
+def plot_data(X,Y,Xlabel,Ylabel,title,subplot=111,show=True):
     plt.subplot(subplot)
     plt.plot(X,Y)
     plt.ylabel(Ylabel)
     plt.xlabel(Xlabel)
     plt.title(title)
+    if show==True:
+        plt.show()
 
 def get_event_time(event_type,sequence_number,label_key,keyboard,labels):
     # function to get the times of the calibrations

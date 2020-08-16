@@ -9,6 +9,9 @@ import pandas as pd
 import numpy as np
 import Coherent
 import Arduino
+import functions as fn
+
+
 
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
 
@@ -225,24 +228,41 @@ class UploadPowCalResults(QDialog,UploadPowCalResults_ui):
        
         self.TimeDirectory=TimeDirectory       
         self.BrowseButtonPC.clicked.connect(self.UploadPowCalResults)
-        self.AnalyseButton.clicked.connect(analyseCalData)
+        self.AnalyseButton.clicked.connect(self.analyseCalData)
         
         
     def UploadPowCalResults(self):
         results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
-        input_file=np.loadtxt(str(results_fname))
-        output_df=pd.DataFrame(input_file)
+        input_file=fn.load_ephys(results_fname) #load file 
+        output_df=pd.DataFrame(np.squeeze(ephys.segments[0].analogsignals[0]))
         os.chdir(self.TimeDirectory)#change directory to saving location
-        Filedirectory='power_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.dat'
-        output_df.to_csv(Filedirectory)
-        self.lineEditDir.setText(os.getcwd() + '\\' + Filedirectory)
-        
+        FileName='power_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr'
+        output_df.to_csv(FileName)
+        self.lineEditDir.setText(os.getcwd() + '\\' + FileName)
+        Filedirectory=os.getcwd() + '\\' + FileName
         self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.AnalyseButton.setIcon(icon)
-     
+        return Filedirectory
+    
     def analyseCalData(self):
+        '''
+        Filepath - Path to the .smr file that was uploaded with "UploadPowCalResults"
+            
+        '''       
+        FilePath=self.UploadPowCalResults()
+        ephys=fn.load_ephys(FilePath) #load file        
+        picker = ephys.segments[0].analogsignals[0][:,1] #this channel shows the power measurement from a beam sampler, proportional to the actual laser power in the system.
+
+        f.plot_data(Im.times,np.squeeze(Im),None,f'Membrane Current\n({Im.units})','Membrane current vs time',[-1,1],411,show=True)
+        f.plot_data(Vm.times,np.squeeze(Vm),None,f'Membrane Voltage\n({Vm.units})','Membrane voltage vs time',[-50,-10],412,show=True)
+        f.plot_data(picker.times,np.squeeze(picker),'Time (s)','Picker power meter\nmeasurement output (V)',\
+            'Picker power meter (measurement output) voltage vs time',None,414)
+
+
+        #plot the figure, save to png in folder, display png?
+        
         print('Not written yet.')
         
         
