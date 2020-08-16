@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, uic, QtGui
 from PyQt5.QtWidgets import QDialog, QFileDialog
-from icons import *
+from icons_rc import *
 import sys
 import webbrowser
 import os
@@ -10,11 +10,16 @@ import numpy as np
 import Coherent
 import Arduino
 
+os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
+
+SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
+UploadPowCalResults_ui,_=uic.loadUiType('UploadPowCalResults.ui')
+
 class Ui(QtWidgets.QMainWindow):
     def __init__(self,arduino,coherent):
         super(Ui,self).__init__() #call the inherited classes __init__method
         uic.loadUi('MainApp.ui',self) # Load the .ui file
-        
+                
         #serial ports
         self.arduino=arduino
         self.coherent=coherent
@@ -107,7 +112,11 @@ class Ui(QtWidgets.QMainWindow):
         os.chdir(TimeDirectory)
         self.set4.setStyleSheet("font: 8pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         return TimeDirectory         
-        
+    
+    def getTimeDirectory(self):
+        TimeDirectory=self.lineEditDirectory_4.text()
+        return TimeDirectory 
+    
     def UploadCalibrationFile(self):
         calibration_fname,_filter=QFileDialog.getOpenFileName(self, 'Upload File')
         input_file=np.loadtxt(str(calibration_fname))
@@ -115,7 +124,7 @@ class Ui(QtWidgets.QMainWindow):
         self.SetDailyDirectory() #change directory to saving location
         Filedirectory='power_calibration_980nm_8um_spot -' + datetime.datetime.now().strftime('%Y-%m-%d') + '.dat'
         output_df.to_csv(Filedirectory)
-        self.lineEditFile.setText(os.getcwd() + '\'' + Filedirectory)
+        self.lineEditFile.setText(os.getcwd() + '\\' + Filedirectory)
         
         self.NextButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
@@ -128,7 +137,8 @@ class Ui(QtWidgets.QMainWindow):
 #       POWER CALIBRATION
     def OpenSafetyWindow(self): 
         MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,steps=self.getParamVals()
-        SW=SafetyWindow(self.arduino,self.coherent,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,steps)
+        TimeDirectory=self.getTimeDirectory()
+        SW=SafetyWindow(self.arduino,self.coherent,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,steps)
         SW.exec_()
         
     def getParamVals(self):
@@ -155,13 +165,16 @@ class Ui(QtWidgets.QMainWindow):
         
         
         
-class SafetyWindow(QDialog):
-    def __init__(self,arduino,coherent,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,steps):
-        super(SafetyWindow,self).__init__()
-        uic.loadUi('SafetyWindow.ui',self)
+class SafetyWindow(QDialog,SafetyWindow_ui):
+    def __init__(self,arduino,coherent,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,steps):
+        QDialog.__init__(self)
+        SafetyWindow_ui.__init__(self)
+        self.setupUi(self)
+        
         
         self.arduino=arduino
         self.coherent=coherent
+        self.TimeDirectory=TimeDirectory
         
         self.MRR_in_kHz=MRR_in_kHz
         self.PW_in_fs=PW_in_fs
@@ -174,8 +187,7 @@ class SafetyWindow(QDialog):
         
         self.checkBoxKeyswitch.stateChanged.connect(self.ChangeColour)
         self.LaserManualButton2.clicked.connect(self.OpenLaserManual) 
-        self.SWRunButton.clicked.connect(self.StartLaserCalibration)          
-                
+        self.SWRunButton.clicked.connect(self.StartLaserCalibration)           
         
     def ChangeColour(self):          
         if self.checkBoxIsSafe.isChecked() and self.checkBoxKeyswitch.isChecked():
@@ -198,6 +210,41 @@ class SafetyWindow(QDialog):
             self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, min_time_off=0)
         self.coherent.stop_lasing()
         print('Completed lasing')
+        self.close() # close window
+        #Open new window for results
+        NewWindow=UploadPowCalResults(self.TimeDirectory)
+        NewWindow.exec_()
+        
+        
+# After laser calibration run
+class UploadPowCalResults(QDialog,UploadPowCalResults_ui):
+    def __init__(self,TimeDirectory):
+        QDialog.__init__(self)
+        UploadPowCalResults_ui.__init__(self)
+        self.setupUi(self)
+       
+        self.TimeDirectory=TimeDirectory       
+        self.BrowseButtonPC.clicked.connect(self.UploadPowCalResults)
+        self.AnalyseButton.clicked.connect(analyseCalData)
+        
+        
+    def UploadPowCalResults(self):
+        results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
+        input_file=np.loadtxt(str(results_fname))
+        output_df=pd.DataFrame(input_file)
+        os.chdir(self.TimeDirectory)#change directory to saving location
+        Filedirectory='power_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.dat'
+        output_df.to_csv(Filedirectory)
+        self.lineEditDir.setText(os.getcwd() + '\\' + Filedirectory)
+        
+        self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.AnalyseButton.setIcon(icon)
+     
+    def analyseCalData(self):
+        print('Not written yet.')
+        
         
 # Terms of use pop-up box
 class TermsOfUse(QDialog):
@@ -222,6 +269,7 @@ class TermsOfUse(QDialog):
         webbrowser.open(path)
 
 
+
 #############################################################################
 # app = QtWidgets.QApplication(sys.argv) # Create an instance of QtWidgets.QApplication
 # window = Ui() # Create an instance of our class
@@ -234,7 +282,9 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = Ui(arduino,coherent)
     window.show()
+
     sys.exit(app.exec_())
     arduino.close_port()
     coherent.close_port()
+
 
