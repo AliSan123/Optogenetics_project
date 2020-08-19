@@ -42,5 +42,11 @@ class DataAnalysis:
             'Picker power meter (measurement output) voltage vs time',None,414)
          plt.show()
           
-    
+    # this is to find the start of the sequence and remove "breaks"
+#     differentiated=np.diff(np.squeeze(picker)) #shows where increasing and decreasing
+# indexes=np.where(differentiated>0)#these give the indexes of increasing
+# picker_squeeze=np.squeeze(picker)
+# indexes_only=picker_squeeze[indexes] #extract only powers of indexes
+# thres=np.where(indexes_only>0.025) #now apply a threshold
+# plt.plot(indexes_only[thres])
         

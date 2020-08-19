@@ -30,7 +30,7 @@
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <item row="4" column="0" colspan="2">
+    <item row="4" column="0" colspan="4">
      <widget class="QLabel" name="label">
       <property name="minimumSize">
        <size>
@@ -82,18 +82,11 @@ background-color: rgb(17, 53, 196);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Browse</string>
+       <string>Browse for .smr</string>
       </property>
      </widget>
     </item>
-    <item row="8" column="1">
-     <widget class="QLineEdit" name="lineEditDir">
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </item>
-    <item row="6" column="0" colspan="2">
+    <item row="6" column="0" colspan="4">
      <widget class="QLabel" name="label_3">
       <property name="styleSheet">
        <string notr="true">background-color: rgb(0, 153, 255,50);</string>
@@ -106,14 +99,8 @@ color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </item>
-    <item row="9" column="0" colspan="2" alignment="Qt::AlignRight">
+    <item row="13" column="2" rowspan="2" colspan="2" alignment="Qt::AlignRight">
      <widget class="QCommandLinkButton" name="AnalyseButton">
-      <property name="maximumSize">
-       <size>
-        <width>16777215</width>
-        <height>50</height>
-       </size>
-      </property>
       <property name="cursor">
        <cursorShape>PointingHandCursor</cursorShape>
       </property>
@@ -137,6 +124,54 @@ color: rgb(189, 189, 189);</string>
       </property>
       <property name="checkable">
        <bool>false</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="0">
+     <widget class="QPushButton" name="PushButtonChannels">
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 153, 255);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>View Channels</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="0">
+     <widget class="QPushButton" name="closeFigure">
+      <property name="text">
+       <string>Close Figure</string>
+      </property>
+     </widget>
+    </item>
+    <item row="8" column="1" colspan="3">
+     <widget class="QLineEdit" name="lineEditDir">
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="13" column="1">
+     <widget class="QPushButton" name="PlotCalibration">
+      <property name="minimumSize">
+       <size>
+        <width>30</width>
+        <height>30</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">background-color: rgb(0, 153, 255);
+color: rgb(255, 255, 255);</string>
+      </property>
+      <property name="text">
+       <string>Plot Calibration</string>
       </property>
      </widget>
     </item>
