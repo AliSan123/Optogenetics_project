@@ -155,10 +155,10 @@ def pockels_ave_pulse_voltage(pockels,start_sample,end_sample,tol=1):
     
     
   #   return energy_vs_power
-
-file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
-ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(file)
-start_time=get_event_time(ephys,event_type='calibrate',sequence_number=1)
-time_list=[0,5,10,15,25]
-picker_calibration_segment(start_time,time_list,picker_Hz,picker,0,0)
+if __name__=='__main__':  
+    file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
+    ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(file)
+    start_time=get_event_time(ephys,event_type='calibrate',sequence_number=1)
+    time_list=[0,5,10,15,25]
+    picker_calibration_segment(start_time,time_list,picker_Hz,picker,0,0)
 # energy_list(5 5 5 10 10 10)

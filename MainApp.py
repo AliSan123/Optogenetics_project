@@ -1,5 +1,5 @@
-arduino.close_port()
-coherent.close_port()
+# arduino.close_port()
+# coherent.close_port()
 
 import os
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
@@ -58,6 +58,14 @@ class Ui(QtWidgets.QMainWindow):
         self.setMRRParams.clicked.connect(self.getMRRParamVals) 
         self.setMRRParams.clicked.connect(self.RunButtonToGreen2)
         self.RunButton_2.clicked.connect(lambda: self.OpenSafetyWindow('MRR'))
+        
+#       Cell Experiments
+        self.energy_radio.clicked.connect(self.toggle_radio)
+        self.MRR_radio.clicked.connect(self.toggle_radio)
+        self.step_intervals.clicked.connect(self.toggle_radio)
+        self.custom_list.clicked.connect(self.toggle_radio)
+        self.setCellParams.clicked.connect(self.getCellParamVals)    
+        
         
 #       HOME SCREEN  
     def OpenTermsOfUse(self):
@@ -147,36 +155,38 @@ class Ui(QtWidgets.QMainWindow):
     def OpenSafetyWindow(self,Type): 
         steps=0 #giving it a value because not applicable for 'MRR'
         if Type=='Power':
-            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement=self.getParamVals()
+            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getParamVals()
         elif Type=='MRR':
-            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement=self.getMRRParamVals()
+            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getMRRParamVals()
             
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
-        SW=SafetyWindow(self.arduino,self.coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement)
+        SW=SafetyWindow(self.arduino,self.coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
         SW.exec_()
         
     def getParamVals(self):
-        #Repetition rate parameters
+        #Fixed params
+        pulse_duration_ms=self.CalTimeSpinBox.value() 
+        beam_diameter=self.BeamDiamSpinBBox.value()
+        interpulseinterval=self.IPISpinBBox.value()
+        picker_max_output=self.picker_max_output.value()
+        picker_max_measurement=self.picker_max_measurement.value()       
         combo_txt=self.comboBox.currentText()
         combo_lst=combo_txt.split(",")
         MRR_in_kHz=combo_lst[0]
         PW_in_fs=combo_lst[1]
         RRDivisor=combo_lst[2]
         PulsesPerMBurst=combo_lst[3]
-        # energy params
+        # Variable (energy) params
         min_energy_as_frac=self.energy_spinbox.value()/100
         print('min energy as frac= %2f'%min_energy_as_frac)
         max_energy_as_frac=self.energy_spinbox_2.value()/100
         print('max energy as frac= %2f'%max_energy_as_frac)
-        steps=self.energy_spinbox_3.value()
+        steps=self.energy_spinbox_3.value() #how many energy values do you want to test?
         delta_energy=(max_energy_as_frac-min_energy_as_frac)/steps #"delta" -change in energy with each ramp up
         n_times=self.energy_spinbox_4.value()
-        pulse_duration_ms=self.CalTimeSpinBox.value()        
-        interpulseinterval=self.IPISpinBBox.value()
-        picker_max_output=self.picker_max_output.value()
-        picker_max_measurement=self.picker_max_measurement.value()
-        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement
+ 
+        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter
               
     def RunButtonToGreen(self):
         self.RunButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
@@ -186,23 +196,24 @@ class Ui(QtWidgets.QMainWindow):
         
 # MRR Calibration
     def getMRRParamVals(self):
-        #Repetition rate parameters   
+        # Fixed params
+        pulse_duration_ms=self.CalTimeSpinBox_2.value() 
+        beam_diameter=self.BeamDiamSpinBBox_2.value()
+        interpulseinterval=self.IPISpinBBox_2.value()
+        energy_as_frac=self.energy_spinbox_5.value()/100
+        PW_in_fs=self.PWdoubleSpinBox.value()
+        RRDivisor=self.lineEdit.text()
+        PulsesPerMBurst=self.lineEdit_2.text()       
+        picker_max_output=self.picker_max_output_2.value()
+        picker_max_measurement=self.picker_max_measurement_2.value()        
+        # Variable parameters   
         combo_txt=self.MRRcomboBox.currentText()
         combo_lst=combo_txt.split(",") 
         MRR_in_kHz=combo_lst
         print('MRR list:' + str(MRR_in_kHz))
-        PW_in_fs=self.PWdoubleSpinBox.value()
-        RRDivisor=1
-        PulsesPerMBurst=1
-        # energy params
-        energy_as_frac=self.energy_spinbox_5.value()/100
-        n_times=self.MRR_spinbox.value()
-        pulse_duration_ms=self.CalTimeSpinBox_2.value()        
-        interpulseinterval=self.IPISpinBBox_2.value()
-        steps=1 #for consistent number of variables when passing into SafetyWindow class
-        picker_max_output=self.picker_max_output_2.value()
-        picker_max_measurement=self.picker_max_measurement_2.value()
-        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement
+        n_times=self.MRR_spinbox.value()                         
+        steps=len(combo_lst) #not actually used but required for consistent number of variables when passing into SafetyWindow class
+        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter
     
     def RunButtonToGreen2(self):
         self.RunButton_2.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
@@ -210,11 +221,40 @@ class Ui(QtWidgets.QMainWindow):
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.RunButton_2.setIcon(icon)
                     
-
-
+# Cell Experiments
+    def toggle_radio(self):
+        if self.energy_radio.isChecked():
+           #change style sheet
+           self.energy_title.setStyleSheet("background-color: rgba(0, 153, 255, 50)")
+           if self.step_intervals.isChecked():
+               self.min_energy_spin.setStyleSheet("")
+               self.min_energy_spin.setReadOnly(False)
+               self.max_energy_spin.setStyleSheet("")
+               self.max_energy_spin.setReadOnly(False)
+               self.energy_steps.setStyleSheet("")
+               self.energy_steps.setReadOnly(False)
+           elif self.custom_list.isChecked():
+               self.custom_list_combo.setStyleSheet("")
+               self.custom_list_combo.setEditable(True)
+               
+        elif self.MRR_radio.isChecked():
+            self.MRR_heading.setStyleSheet("background-color: rgba(0, 153, 255, 50)")
+            self.MRRcomboBox_2.setStyleSheet("")
+            self.MRRcomboBox_2.setEditable(True)
+            
+            
+    def getCellParamVals(self):
+        exp_label=self.exp_label.text()
+        pulse_duration_ms=self.pulse_duration.value()
+        beam_diameter=self.BeamDiamSpinBBox_3.value()
+        PW_in_fs=self.PWdoubleSpinBox_2.value()
+        RRDivisor=self.lineEdit_3.text()
+        PulsesPerMBurst=self.lineEdit_4.text() 
+        n_times=self.n_times_spinbox.value()
+        
         
 class SafetyWindow(QDialog,SafetyWindow_ui):
-    def __init__(self,arduino,coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement):
+    def __init__(self,arduino,coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
         QDialog.__init__(self)
         SafetyWindow_ui.__init__(self)
         self.setupUi(self)
@@ -236,10 +276,12 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         self.interpulseinterval=interpulseinterval          
         self.picker_max_output=picker_max_output
         self.picker_max_measurement=picker_max_measurement
+        self.beam_diameter=beam_diameter
         
         self.checkBoxKeyswitch.stateChanged.connect(self.ChangeColour)
         self.LaserManualButton2.clicked.connect(self.OpenLaserManual) 
         self.SWRunButton.clicked.connect(self.StartLaserCalibration)           
+        
         
     def ChangeColour(self):          
         if self.checkBoxIsSafe.isChecked() and self.checkBoxKeyswitch.isChecked():

@@ -68,7 +68,7 @@ font: 8pt &quot;Eras Medium ITC&quot;;
 </string>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -1466,6 +1466,9 @@ border-color: rgb(17, 53, 196);</string>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_16">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;This determines the number of repetitions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Samples at each energy value:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -1480,6 +1483,9 @@ border-color: rgb(17, 53, 196);</string>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_17">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;How many energy values do you want to test?&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Steps:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -2622,10 +2628,10 @@ color: rgb(189, 189, 189)</string>
               <double>0.000000000000000</double>
              </property>
              <property name="maximum">
-              <double>1000000000.000000000000000</double>
+              <double>1000.000000000000000</double>
              </property>
              <property name="value">
-              <double>1000.000000000000000</double>
+              <double>0.000000000000000</double>
              </property>
             </widget>
            </item>
@@ -2635,7 +2641,7 @@ color: rgb(189, 189, 189)</string>
               <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
              </property>
              <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;ms&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;s&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
             </widget>
            </item>
@@ -2860,6 +2866,9 @@ p, li { white-space: pre-wrap; }
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_31">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;This determines the number of repetitions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Samples at each MRR value:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
@@ -2940,25 +2949,12 @@ p, li { white-space: pre-wrap; }
          <item row="5" column="2">
           <layout class="QGridLayout" name="gridLayout_10">
            <item row="2" column="0">
-            <widget class="QRadioButton" name="radioButton_2">
+            <widget class="QRadioButton" name="MRR_radio">
              <property name="styleSheet">
               <string notr="true"/>
              </property>
              <property name="text">
               <string>Repetition rate (kHz)</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QRadioButton" name="radioButton">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <property name="text">
-              <string>Input pulse energy: (% of 40 𝜇J)</string>
-             </property>
-             <property name="checked">
-              <bool>true</bool>
              </property>
             </widget>
            </item>
@@ -2985,12 +2981,22 @@ background-color: rgba(0, 153, 255, 50);</string>
              </property>
             </widget>
            </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="energy_radio">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <property name="text">
+              <string>Input pulse energy: (% of 40 𝜇J)</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
          <item row="6" column="2" rowspan="3">
           <layout class="QGridLayout" name="gridLayout_11">
            <item row="1" column="0" colspan="4">
-            <widget class="QLabel" name="label_67">
+            <widget class="QLabel" name="energy_title">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -3004,7 +3010,7 @@ background-color: rgba(0, 153, 255, 50);</string>
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">background-color: rgb(186, 186, 186);</string>
+              <string notr="true">background-color: rgba(0, 153, 255, 50);</string>
              </property>
              <property name="text">
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:10pt; font-weight:600&quot;&gt;Choose option for energy values:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -3012,7 +3018,7 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="3" column="0">
-            <widget class="QRadioButton" name="radioButton_3">
+            <widget class="QRadioButton" name="step_intervals">
              <property name="styleSheet">
               <string notr="true"/>
              </property>
@@ -3025,7 +3031,7 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="4" column="0">
-            <widget class="QRadioButton" name="radioButton_4">
+            <widget class="QRadioButton" name="custom_list">
              <property name="styleSheet">
               <string notr="true"/>
              </property>
@@ -3038,7 +3044,7 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QDoubleSpinBox" name="energy_spinbox_7">
+            <widget class="QDoubleSpinBox" name="min_energy_spin">
              <property name="minimumSize">
               <size>
                <width>70</width>
@@ -3050,6 +3056,12 @@ background-color: rgba(0, 153, 255, 50);</string>
                <width>70</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(189, 189, 189);</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
              </property>
              <property name="maximum">
               <double>100.000000000000000</double>
@@ -3060,7 +3072,7 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="3" column="2">
-            <widget class="QDoubleSpinBox" name="energy_spinbox_8">
+            <widget class="QDoubleSpinBox" name="max_energy_spin">
              <property name="minimumSize">
               <size>
                <width>70</width>
@@ -3072,6 +3084,12 @@ background-color: rgba(0, 153, 255, 50);</string>
                <width>70</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(189, 189, 189);</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
              </property>
              <property name="maximum">
               <double>100.000000000000000</double>
@@ -3082,12 +3100,18 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="3" column="3">
-            <widget class="QSpinBox" name="MRR_spinbox_3">
+            <widget class="QSpinBox" name="energy_steps">
              <property name="maximumSize">
               <size>
                <width>70</width>
                <height>16777215</height>
               </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(189, 189, 189);</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
              </property>
              <property name="value">
               <number>1</number>
@@ -3095,21 +3119,51 @@ background-color: rgba(0, 153, 255, 50);</string>
             </widget>
            </item>
            <item row="4" column="1" colspan="3">
-            <widget class="QComboBox" name="MRRcomboBox_3">
+            <widget class="QComboBox" name="custom_list_combo">
              <property name="minimumSize">
               <size>
                <width>200</width>
                <height>0</height>
               </size>
              </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(189, 189, 189);</string>
+             </property>
              <property name="editable">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <item>
               <property name="text">
                <string>100,200,400,500,800,1000,1500</string>
               </property>
              </item>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="label_49">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>14</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>Minimum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QLabel" name="label_50">
+             <property name="text">
+              <string>Maimum</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QLabel" name="label_51">
+             <property name="text">
+              <string>No. steps</string>
+             </property>
             </widget>
            </item>
           </layout>
@@ -3179,7 +3233,7 @@ color: rgb(189, 189, 189)</string>
          <item row="9" column="2" rowspan="6">
           <layout class="QGridLayout" name="gridLayout_7">
            <item row="0" column="0" colspan="3">
-            <widget class="QLabel" name="label_68">
+            <widget class="QLabel" name="MRR_heading">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -3226,8 +3280,11 @@ p, li { white-space: pre-wrap; }
                <height>0</height>
               </size>
              </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(189, 189, 189);</string>
+             </property>
              <property name="editable">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
              <item>
               <property name="text">
@@ -3308,7 +3365,7 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item row="12" column="4">
-          <widget class="QPushButton" name="setMRRParams_2">
+          <widget class="QPushButton" name="setCellParams">
            <property name="maximumSize">
             <size>
              <width>300</width>
@@ -3484,7 +3541,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="1" column="2">
-            <widget class="QDoubleSpinBox" name="CalTimeSpinBox_3">
+            <widget class="QDoubleSpinBox" name="pulse_duration">
              <property name="sizePolicy">
               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                <horstretch>0</horstretch>
@@ -3553,7 +3610,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="0" column="2">
-            <widget class="QLineEdit" name="lineEdit_36">
+            <widget class="QLineEdit" name="exp_label">
              <property name="maximumSize">
               <size>
                <width>70</width>
@@ -3570,7 +3627,7 @@ color: rgb(145, 145, 145);</string>
             </widget>
            </item>
            <item row="6" column="2">
-            <widget class="QSpinBox" name="MRR_spinbox_2">
+            <widget class="QSpinBox" name="n_times_spinbox">
              <property name="maximumSize">
               <size>
                <width>70</width>
