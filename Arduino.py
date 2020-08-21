@@ -31,7 +31,7 @@ class Arduino:
         Variables:
         pulse_duration_ms = the delay timefor which TTL=HIGH
         n_times = the number of loops of on-off sequences (multiple "shots" at once after cells recover)
-        min_time_off = the minimum time for which the TTL=LOW before starting loop again. 
+        min_time_off = the minimum time in seconds for which the TTL=LOW before starting loop again. 
                         (minimum because there is error associated with the processing time)
         '''
 
