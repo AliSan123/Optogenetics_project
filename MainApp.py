@@ -10,14 +10,14 @@ from icons_rc import *
 import sys
 import webbrowser
 import datetime
-import pandas as pd
 import numpy as np
 import shutil
 import Coherent
 import Arduino
 import functions as f
 import matplotlib.pyplot as plt
-import time
+import pyqtgraph as pg
+
 
 SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
 UploadPowCalResults_ui,_=uic.loadUiType('UploadPowCalResults.ui')
@@ -256,40 +256,37 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         webbrowser.open(path)
 
     def StartLaserCalibration(self):
-        self.coherent.startup()
-        self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst)
-        variable_list=[]
-        time_list=[]
+        self.coherent.startup() #start laser from standby - checks and Pulse Mode=1
+        self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst) #set parameters
+        energy_list=[]
+        # the following increases the energy % sent with each loop with the 
+        # option to repeat an energy level n_times
         for i in range(int(self.steps)):               
             self.energy_as_frac*(i)
-            print(self.energy_as_frac*(i))
+            print('Energy sent is: '+ self.energy_as_frac*(i))
             self.coherent.set_energy(self.energy_as_frac*(i))
             self.coherent.start_lasing()
-            t0=time.time()
-            time_list.append(t0)
-            print(t0)
             self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)               
-            variable_list.append(self.energy_as_frac*(i))                
+            energy_list.append(np.repeat(self.energy_as_frac*(i),self.n_times))                
         self.coherent.stop_lasing()
         print('Completed lasing Power')
         self.close() # close window
         #Open new window for results
-        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,variable_list,time_list)
+        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,energy_list)
         NewWindow.exec_()     
 
  
 
 # After laser calibration run
 class UploadResults(QDialog,UploadPowCalResults_ui):
-    def __init__(self,DailyDirectory,TimeDirectory,variable_list,time_list):
+    def __init__(self,DailyDirectory,TimeDirectory,energy_list):
         QDialog.__init__(self)
         UploadPowCalResults_ui.__init__(self)
         self.setupUi(self)
        
         self.DailyDirectory=DailyDirectory
         self.TimeDirectory=TimeDirectory 
-        self.variable_list=variable_list # energy or MRR depending on Type
-        self.time_list=time_list
+        self.energy_list=energy_list # energy or MRR depending on Type
         
         self.BrowseButtonPC.clicked.connect(self.Upload)
         self.PushButtonChannels.clicked.connect(self.PlotChannels)
@@ -405,7 +402,6 @@ if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
     window = Ui(arduino,coherent)
     window.show()
-
     sys.exit(app.exec_())
     arduino.close_port()
     coherent.close_port()
