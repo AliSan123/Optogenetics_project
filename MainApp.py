@@ -48,17 +48,11 @@ class Ui(QtWidgets.QMainWindow):
         self.BrowseButton2.clicked.connect(self.UploadCalibrationFile)
         self.NextButton.clicked.connect(self.GoToPowerCalibration)
 
-#       POWER CALIBRATION TAB    
-        
+#       POWER CALIBRATION TAB            
         self.setParams.clicked.connect(self.getParamVals) 
         self.setParams.clicked.connect(self.RunButtonToGreen)
-        self.RunButton.clicked.connect(lambda: self.OpenSafetyWindow('Power'))
-
-#       MRR CALIBRATION TAB 
-        self.setMRRParams.clicked.connect(self.getMRRParamVals) 
-        self.setMRRParams.clicked.connect(self.RunButtonToGreen2)
-        self.RunButton_2.clicked.connect(lambda: self.OpenSafetyWindow('MRR'))
-        
+        self.RunButton.clicked.connect(self.OpenSafetyWindow)
+     
 #       Cell Experiments
         self.energy_radio.clicked.connect(self.toggle_radio)
         self.MRR_radio.clicked.connect(self.toggle_radio)
@@ -152,16 +146,11 @@ class Ui(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(2)
 
 #       POWER CALIBRATION
-    def OpenSafetyWindow(self,Type): 
-        steps=0 #giving it a value because not applicable for 'MRR'
-        if Type=='Power':
-            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getParamVals()
-        elif Type=='MRR':
-            MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getMRRParamVals()
-            
+    def OpenSafetyWindow(self): 
+        MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getParamVals()
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
-        SW=SafetyWindow(self.arduino,self.coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
+        SW=SafetyWindow(self.arduino,self.coherent,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
         SW.exec_()
         
     def getParamVals(self):
@@ -194,33 +183,6 @@ class Ui(QtWidgets.QMainWindow):
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.RunButton.setIcon(icon)
         
-# MRR Calibration
-    def getMRRParamVals(self):
-        # Fixed params
-        pulse_duration_ms=self.CalTimeSpinBox_2.value() 
-        beam_diameter=self.BeamDiamSpinBBox_2.value()
-        interpulseinterval=self.IPISpinBBox_2.value()
-        energy_as_frac=self.energy_spinbox_5.value()/100
-        PW_in_fs=self.PWdoubleSpinBox.value()
-        RRDivisor=self.lineEdit.text()
-        PulsesPerMBurst=self.lineEdit_2.text()       
-        picker_max_output=self.picker_max_output_2.value()
-        picker_max_measurement=self.picker_max_measurement_2.value()        
-        # Variable parameters   
-        combo_txt=self.MRRcomboBox.currentText()
-        combo_lst=combo_txt.split(",") 
-        MRR_in_kHz=combo_lst
-        print('MRR list:' + str(MRR_in_kHz))
-        n_times=self.MRR_spinbox.value()                         
-        steps=len(combo_lst) #not actually used but required for consistent number of variables when passing into SafetyWindow class
-        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter
-    
-    def RunButtonToGreen2(self):
-        self.RunButton_2.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.RunButton_2.setIcon(icon)
-                    
 # Cell Experiments
     def toggle_radio(self):
         if self.energy_radio.isChecked():
@@ -254,12 +216,11 @@ class Ui(QtWidgets.QMainWindow):
         
         
 class SafetyWindow(QDialog,SafetyWindow_ui):
-    def __init__(self,arduino,coherent,Type,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
+    def __init__(self,arduino,coherent,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
         QDialog.__init__(self)
         SafetyWindow_ui.__init__(self)
         self.setupUi(self)
       
-        self.Type=Type
         self.arduino=arduino
         self.coherent=coherent
         self.TimeDirectory=TimeDirectory
@@ -296,60 +257,37 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
 
     def StartLaserCalibration(self):
         self.coherent.startup()
-        if self.Type=='Power':
-            print('Power')
-            self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst)
-            variable_list=[]
-            time_list=[]
-            for i in range(int(self.steps)):               
-                self.energy_as_frac*(i)
-                print(self.energy_as_frac*(i))
-                self.coherent.set_energy(self.energy_as_frac*(i))
-                self.coherent.start_lasing()
-                t0=time.time()
-                time_list.append(t0)
-                print(t0)
-                self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)               
-                variable_list.append(self.energy_as_frac*(i))                
-            self.coherent.stop_lasing()
-            print('Completed lasing Power')
-            self.close() # close window
-            #Open new window for results
-            NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,self.Type,variable_list,time_list)
-        elif self.Type=='MRR':
-            self.coherent.startup()
-            self.coherent.set_energy(self.energy_as_frac)
-            variable_list=[]
-            time_list=[]
-            for i in range(len(self.MRR_in_kHz)):
-                print(len(self.MRR_in_kHz))
-                print(self.MRR_in_kHz[i])
-                self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst)
-                self.coherent.start_lasing() 
-                t0=time.time()
-                variable_list.append(t0)
-                print(t0)
-                self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)       
-                variable_list.append(self.MRR_in_kHz[i])
-            self.coherent.stop_lasing()
-            print('Completed lasing MRR')
-            self.close() # close window
-            #Open new window for results
-            NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,self.Type,variable_list,time_list)
+        self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst)
+        variable_list=[]
+        time_list=[]
+        for i in range(int(self.steps)):               
+            self.energy_as_frac*(i)
+            print(self.energy_as_frac*(i))
+            self.coherent.set_energy(self.energy_as_frac*(i))
+            self.coherent.start_lasing()
+            t0=time.time()
+            time_list.append(t0)
+            print(t0)
+            self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)               
+            variable_list.append(self.energy_as_frac*(i))                
+        self.coherent.stop_lasing()
+        print('Completed lasing Power')
+        self.close() # close window
+        #Open new window for results
+        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,variable_list,time_list)
         NewWindow.exec_()     
 
  
 
 # After laser calibration run
 class UploadResults(QDialog,UploadPowCalResults_ui):
-    def __init__(self,DailyDirectory,TimeDirectory,Type,variable_list,time_list):
+    def __init__(self,DailyDirectory,TimeDirectory,variable_list,time_list):
         QDialog.__init__(self)
         UploadPowCalResults_ui.__init__(self)
         self.setupUi(self)
        
         self.DailyDirectory=DailyDirectory
         self.TimeDirectory=TimeDirectory 
-        self.Type=Type
         self.variable_list=variable_list # energy or MRR depending on Type
         self.time_list=time_list
         
@@ -362,11 +300,7 @@ class UploadResults(QDialog,UploadPowCalResults_ui):
         
     def Upload(self):
         results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
-        if self.Type=='Power':                       
-            newPath=shutil.copy(results_fname,self.TimeDirectory + '\\' + 'power_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')            
-        elif self.Type=='MRR':
-            newPath=shutil.copy(results_fname,self.TimeDirectory + '\\' + 'MRR_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
-        
+        newPath=shutil.copy(results_fname,self.TimeDirectory + '\\' + 'power_calibration_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
         self.lineEditDir.setText(newPath)      
         self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
