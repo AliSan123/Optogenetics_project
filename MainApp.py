@@ -17,6 +17,7 @@ import Arduino
 import functions as f
 import matplotlib.pyplot as plt
 import pyqtgraph as pg
+import pyqtgraph.exporters
 
 
 SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
@@ -131,17 +132,19 @@ class Ui(QtWidgets.QMainWindow):
     
     def getTimeDirectory(self):
         TimeDirectory=self.lineEditDirectory_4.text()
-        return TimeDirectory 
+        return TimeDirectory           
     
+   
     def UploadCalibrationFile(self):
         calibration_fname,_filter=QFileDialog.getOpenFileName(self, 'Upload File')
-        newPath=shutil.copy(calibration_fname,self.getDailyDirectory() + '\\' + 'power_calibration_980nm_8um_spot -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.dat')
+        newPath=shutil.copy(calibration_fname,self.getDailyDirectory() + '\\' + 'power_calibration_980nm_8um_spot -' + datetime.datetime.now().strftime('%Y-%m-%d') + '.dat')
         self.lineEditFile.setText(newPath)      
         self.NextButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.NextButton.setIcon(icon)     
-
+        self.NextButton.setIcon(icon) 
+    
+    
     def GoToPowerCalibration(self):
         self.tabWidget.setCurrentIndex(2)
 
@@ -150,7 +153,8 @@ class Ui(QtWidgets.QMainWindow):
         MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getParamVals()
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
-        SW=SafetyWindow(self.arduino,self.coherent,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
+        CalibrationFile=self.lineEditFile.text()
+        SW=SafetyWindow(self.arduino,self.coherent,DailyDirectory,TimeDirectory,CalibrationFile,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
         SW.exec_()
         
     def getParamVals(self):
@@ -216,7 +220,7 @@ class Ui(QtWidgets.QMainWindow):
         
         
 class SafetyWindow(QDialog,SafetyWindow_ui):
-    def __init__(self,arduino,coherent,DailyDirectory,TimeDirectory,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
+    def __init__(self,arduino,coherent,DailyDirectory,TimeDirectory,CalibrationFile,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
         QDialog.__init__(self)
         SafetyWindow_ui.__init__(self)
         self.setupUi(self)
@@ -225,6 +229,7 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         self.coherent=coherent
         self.TimeDirectory=TimeDirectory
         self.DailyDirectory=DailyDirectory
+        self.CalibrationFile=CalibrationFile
         
         self.MRR_in_kHz=MRR_in_kHz
         self.PW_in_fs=PW_in_fs
@@ -263,36 +268,46 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         # option to repeat an energy level n_times
         for i in range(int(self.steps)):               
             self.energy_as_frac*(i)
-            print('Energy sent is: '+ self.energy_as_frac*(i))
+            print('Energy sent is: '+ str(self.energy_as_frac*(i)))
             self.coherent.set_energy(self.energy_as_frac*(i))
             self.coherent.start_lasing()
             self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)               
-            energy_list.append(np.repeat(self.energy_as_frac*(i),self.n_times))                
+            energy_list.append(np.repeat(self.energy_as_frac*(i),self.n_times))                           
         self.coherent.stop_lasing()
         print('Completed lasing Power')
+        energy_list=np.asarray(energy_list).flatten()
+        print(energy_list)
         self.close() # close window
         #Open new window for results
-        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,energy_list)
+        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,self.CalibrationFile,energy_list,self.pulse_duration_ms,self.picker_max_output,self.picker_max_measurement,self.beam_diameter)
         NewWindow.exec_()     
 
  
 
 # After laser calibration run
 class UploadResults(QDialog,UploadPowCalResults_ui):
-    def __init__(self,DailyDirectory,TimeDirectory,energy_list):
+    def __init__(self,DailyDirectory,TimeDirectory,CalibrationFile,energy_list,pulse_duration_ms,picker_max_output_V,picker_max_measurement_mW,beam_diameter):
         QDialog.__init__(self)
         UploadPowCalResults_ui.__init__(self)
         self.setupUi(self)
        
         self.DailyDirectory=DailyDirectory
         self.TimeDirectory=TimeDirectory 
+        self.CalibrationFile=CalibrationFile
         self.energy_list=energy_list # energy or MRR depending on Type
+        self.pulse_duration_ms=pulse_duration_ms
+        self.picker_max_output_V=picker_max_output_V
+        self.picker_max_measurement_mW=picker_max_measurement_mW
+        self.beam_diameter=beam_diameter
+
         
         self.BrowseButtonPC.clicked.connect(self.Upload)
         self.PushButtonChannels.clicked.connect(self.PlotChannels)
-        self.closeFigure.clicked.connect(self.closefigure)
+        self.closeFigure.clicked.connect(lambda: self.closefigure(1))
+        self.PushButtonCalibration.clicked.connect(self.PlotCalibration)
+        self.closeFigure_2.clicked.connect(lambda: self.closefigure(2))
         
-        #self.AnalyseButton.clicked.connect(self.analyseCalData)
+        self.AnalyseButton.clicked.connect(self.analyseCalibration)
         
         
     def Upload(self):
@@ -304,6 +319,14 @@ class UploadResults(QDialog,UploadPowCalResults_ui):
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.AnalyseButton.setIcon(icon)
     
+    
+    # def PlotChannels(self):
+    #     ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=f.loadEphysData(self.lineEditDir.text())        
+    #     plot=pg.PlotWidget()
+    #     window=pg.PlotWidget()
+    #     window.plot(picker.times,np.squeeze(picker))
+    #     exporter=pg.exporters.ImageExporter(window.plotItem)
+    #     exporter.export(self.TimeDirectory + '//Figure 1- Plot of Ephys Channels.png')
     def PlotChannels(self):
         ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=f.loadEphysData(self.lineEditDir.text())
         # plot the data
@@ -315,60 +338,35 @@ class UploadResults(QDialog,UploadPowCalResults_ui):
         plt.savefig(self.TimeDirectory + '//Figure 1- Plot of Ephys Channels.png')
         plt.show()    
     
-    def closefigure(self):
-        plt.close(fig=1)
-        
+    def closefigure(self,figure):
+        plt.close(fig=figure)
 
-    
-    
-    
-    
+    def PlotCalibration(self):
+        power_calibration=np.loadtxt(self.CalibrationFile)
+        #plot the calibration
+        plt.figure(2,figsize=(15,10))
+        power_onto_cell_mW=power_calibration[1,:]
+        cal_picker_power_mW=power_calibration[0,:]
+        f.plot_data(cal_picker_power_mW,power_onto_cell_mW,'Picker power (mW)','Power onto cell (mW)',\
+                    'Calibration curve: Power onto cell vs Picker power',None,111,show=False)
+        plt.savefig(self.TimeDirectory + '//Figure 2- Plot of Power onto cell vs Picker Power.png')
+        plt.show()
 
-    # def plot_calibration(self):
-    #     calibration_fname,_filter=QFileDialog.getOpenFileName(self, 'Select File')
-    #     #plot the calibration
-    #     f.plot_data(sample_power_calibration[0,:],sample_power_calibration[1,:],'Picker power (mW)','Power onto cell (mW)',\
-    #                 'Calibration curve: Power onto cell vs Picker power',None)
-    #     plt.savefig(self.TimeDirectory + '//Figure 2- Plot of Power onto cell vs Picker Power.png')
-    #     plt.show()
-
-    # def plotEnergyVsPicker(self): 
-    #     #These two constants allow you to convert the voltage measured at the picker 
-    #     #into a mW value measured at the picker. The power meter outputs between 0 and picker_max_output Volts
-    #     #in direct proportion to the input power as a fraction of picker_max_measurement_mW.
-    #     #i.e. if the Picker outputs 1 V, it is measuring 250 mA of current.
-    #     picker_max_output_V = 2
-    #     picker_max_measurement_mW = 500
-    #     beam_spot_diameter = 8 #in micro meters
-
-    #     #this next variable is an array with times and labels which tells us when the calibration and stimulation occurred.
-    #     #The label key is in the following dict:
-    #     #The keys are loaded as bytes and need to be recovered as characters using the built in chr() function after converting from byte to int
-    #     label_key = {'A':'cancel','F':'calibrate','E':'stimulate'}
-    #     keyboard = ephys.segments[0].events[1]
-    #     labels = [chr(int(x)) for x in keyboard.labels]
+    def analyseCalibration(self):
+        ephysfile=self.lineEditDir.text() #ephys .smr file
+        mean_picker_volts=f.GetMeanVolts(ephysfile,self.pulse_duration_ms,self.energy_list,dead_time=2,test=True)
+        plt.figure(3,figsize=(15,10))
+        f.plot_data(self.energy_list,mean_picker_volts,'Input RL energy (%)','Mean Picker volts (V))',\
+                    'Calibration curve: Mean Picker Volts versus Input RL energy',None,111,show=False)
+        plt.savefig(self.TimeDirectory + '//Figure 3- Plot of Mean Picker Volts versus Input RL energy.png')
+        plt.show()
         
-    #     #command energies
-    #     energy=0.5  
-    #     duration=5 
-    #     # for i in range(self.steps):
-    #         #     print(self.energy_as_frac*(i+1))
-        
-    #     # extract values where picker is maximum
-    #     differentiated=np.diff(np.squeeze(picker)) #shows where increasing and decreasing
-    #     indexes=np.where(differentiated>0)#these give the indexes of increasing
-    #     picker_squeeze=np.squeeze(picker)
-    #     indexes_only=picker_squeeze[indexes] #extract only powers of indexes
-    #     thres=np.where(indexes_only>0.05) #now apply a threshold
-        
-        
-        
-    #     time_increment=1/sampling_rate
-    #     start_sample=start_time*frequency
-        
-        
-        
-
+        plt.figure(4,figsize=(15,10))
+        Power_density=f.convert_V_W(mean_picker_volts,self.picker_max_measurement_mW,self.picker_max_output_V,self.CalibrationFile,self.beam_diameter)
+        f.plot_data(self.energy_list,Power_density,'Input RL energy (%)','Mean Power Density in sample (mW/um2))',\
+                    'Calibration curve: Mean Power Density in sample versus Input RL energy',None,111,show=False)
+        plt.savefig(self.TimeDirectory + '//Figure 4- Plot of Mean Power Density in sample versus Input RL energy.png')
+        plt.show()
 
         
 # Terms of use pop-up box

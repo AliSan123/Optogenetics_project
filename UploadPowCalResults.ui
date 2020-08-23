@@ -135,17 +135,23 @@ color: rgb(189, 189, 189);</string>
         <height>30</height>
        </size>
       </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(0, 153, 255);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>View Channels</string>
+       <string>Preview Channels</string>
       </property>
      </widget>
     </item>
     <item row="14" column="0">
      <widget class="QPushButton" name="closeFigure">
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
       <property name="text">
        <string>Close Figure</string>
       </property>
@@ -159,19 +165,32 @@ color: rgb(255, 255, 255);</string>
      </widget>
     </item>
     <item row="13" column="1">
-     <widget class="QPushButton" name="PlotCalibration">
+     <widget class="QPushButton" name="PushButtonCalibration">
       <property name="minimumSize">
        <size>
         <width>30</width>
         <height>30</height>
        </size>
       </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
       <property name="styleSheet">
        <string notr="true">background-color: rgb(0, 153, 255);
 color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Plot Calibration</string>
+       <string>Preview Calibration .dat</string>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="1">
+     <widget class="QPushButton" name="closeFigure_2">
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="text">
+       <string>Close Figure</string>
       </property>
      </widget>
     </item>

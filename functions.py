@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import neo #https://neo.readthedocs.io/en/stable/
 import numpy as np
 
-def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,show=True,):
+def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,show=True):
     plt.subplot(subplot)
     plt.plot(X,Y)
     plt.ylabel(Ylabel)
@@ -68,7 +68,29 @@ def smooth(signal,window):
     return np.concatenate((  start , out0, stop  ))
 
 
-def GetMeanEnergies(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
+def GetMeanVolts(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
+    '''
+    Parameters
+    ----------
+    smrFile : string 
+        Path to the electrophysiology .smr data file
+    pulse_duration_ms : float
+        The time in milliseconds for which the TTL is HIGH 
+    energy_list : list
+        A list of input RL energy percentages
+    dead_time : float, optional
+        A portion of the time between switching on the electrophysiolgy data 
+        recording and sending the first TTL=High pulse. This is used to establish a baseline
+        for when the TTL is LOW. The default is 2 seconds.
+    test : boolean, optional
+        Runs certain lines for testing only. The default is False.
+
+    Returns
+    -------
+    mean_pulse_volts : list
+        The mean picker volts.
+
+    '''
     ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(smrFile)
     if test==True:
         picker=picker[:2530000] #subsetting to simulate real experiment
@@ -94,10 +116,10 @@ def GetMeanEnergies(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False
     # Average energy over half the pulse duration (once it has ramped up)
     start=0
     sample=cleaned_picker_flipped
-    mean_pulse_energies=[]
-    for i in range(len(energy_list)):
+    mean_pulse_volts=[]
+    for i in range(n_pulses):
         sample=sample[start:]
-        max_sample=np.max(sample.magnitude)
+        max_sample=max(sample.magnitude)
         tolN=max_sample-2*std_dev.magnitude
         pulse_start=np.where(sample>tolN)[0][0] #this is the start within the sample
         pulse_duration_ms=200
@@ -106,108 +128,47 @@ def GetMeanEnergies(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False
         # find the average energy over half the pulse duration
         half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
         half_pulse=sample[pulse_start:half_pulse_end]
-        mean_pulse_energy=np.mean(half_pulse)
-        mean_pulse_energies.append(mean_pulse_energy)
+        mean_pulse_volt=np.mean(half_pulse)
+        mean_pulse_volts.append(mean_pulse_volt)
         start=pulse_end
     
-    return mean_pulse_energies
+    #flip again so that back to original order
+    mean_pulse_volts=np.flip(mean_pulse_volts
+                             )
+    return mean_pulse_volts
 
-
-
-
-
-
-
-
-
-
-
-#These two constants allow you to convert the voltage measured at the picker 
-#into a mW value measured at the picker. The power meter outputs between 0 and picker_max_output Volts
-#in direct proportion to the input power as a fraction of picker_max_measurement_mW.
-#i.e. if the Picker outputs 1 V, it is measuring 250 mA of current.
-# picker_max_output_V = 2
-# picker_max_measurement_mW = 500
-# beam_spot_diameter = 8 #in micro meters 
-
-
- #Step 1 - use event labels to get when calibration events occurred
-def get_event_time(ephys,event_type,sequence_number):
-    '''
-    Parameters
-    ----------
-    ephys : Block ()
-        fetched from function loadEphysData()
-    event_type : string * this is assuming labels are consistent
-        select event of interest based on label keys = 'stimulate' / 'cancel'/ 'calibrate'
-    sequence_number : int
-        the sequence for same events i.e. first calibration = 0, first stimulation=0
-
-    Returns
-    -------
-    event_time : array
-        time values corresponding to the start of an event.
-
-    '''
-    #this next variable is an array with times and labels which tells us when the calibration and stimulation occurred.   
-    #The keys are loaded as bytes and need to be recovered as characters using the built in chr() function after converting from byte to int
-    #The label key is in the following dict:
-    label_key = {'A':'cancel','F':'calibrate','E':'stimulate'}
-    keyboard = ephys.segments[0].events[1]
-    #labels = [chr(int(x)) for x in keyboard.labels]
-    print('Trace contains the following events:')
-    [print(f'Event: {label_key[chr(int(keyboard.labels[x]))]} at time {keyboard[x]:.0f}') for x in range(len(keyboard))]
- 
-    event_times=[float(np.where(label_key[chr(int(keyboard.labels[x]))]==event_type,keyboard[x],0)) for x in range(len(keyboard))]
-    event_time_indexes=np.nonzero(event_times)
-    event_time=event_times[event_time_indexes[0][sequence_number]]
-    return event_time
-
-#start_time= get_event_time(ephys,event_type,sequence_number)
-    #Step 2 -- segment the event of interest 
-    #Step 3 - get the mean power over the segment
-def picker_calibration_segment(start_time,time_list,picker_Hz,picker,steps,n_times,tol=0.01):#variable_list,picker,picker_max_output_V,picker_max_measurement_mW,beam_spot_diameter):
-    ##  first define the event duration
-    Xdiff=np.diff(np.squeeze(picker))
     
-    start_sample=int(np.floor(start_time*picker_Hz))
-    end_time=start_time+max(time_list)
-    approx_end_sample=int(np.ceil(end_time*picker_Hz))
-    max_dif=max(np.where(Xdiff==max(Xdiff[start_sample:approx_end_sample])))
-    print(max_dif)
-    exact_end_time=max(picker.times[max_dif])
-    end_sample=int(np.ceil(exact_end_time*picker_Hz))
-    segment=np.squeeze(picker[start_sample:end_sample]) # powers corresponding to calibration time
-    # plt.plot(segment)
-    
-    segment_times=picker.times[start_sample:end_sample]
-    segment_diff=np.diff(segment) # This highlights extremes changes (i.e. On and Off)
-    TTL_high_times=segment_times[np.where(segment_diff>tol)[0]]
-    print(TTL_high_times)
-    #number_pulses=steps*n_times
-    number_pulses=len(TTL_high_times)
-    print(number_pulses)
-    samples_per_pulse=int(np.ceil((end_sample-start_sample)/(number_pulses+1)))
-    mean_voltage=[np.max(segment[(i)*(samples_per_pulse):samples_per_pulse*(i+1)]) for i in range(number_pulses)]
-    plt.plot(TTL_high_times,mean_voltage)
-    
+def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_diameter):
+    #power (mW) directly proportional to voltage (V); y=mx
+    m=picker_max_measurement_mW/picker_max_output_V #Y/X
+    picker_power=mean_pulse_volts*m
+    #Calibration curve power onto cell versus picker power y=mx+c
+    calibration_file = np.loadtxt(calibration_fname)
+    power_onto_cell_mW=calibration_file[1,:]
+    cal_picker_power_mW=calibration_file[0,:]
+    m2=np.mean(power_onto_cell_mW/cal_picker_power_mW)
+    #Find Power onto cell using calibration curve
+    Power_onto_cell=m2*picker_power
+    #Covert to power density: Assume circular spot pi*(d/2)^2 [microns^2]
+    Power_density=(Power_onto_cell/(np.pi*(beam_diameter/2)**2))
+    #   return energy_vs_power
+    return  Power_density
 
 
-def pockels_ave_pulse_voltage(pockels,start_sample,end_sample,tol=1):
-    sample_array=np.squeeze(pockels[start_sample:end_sample])
-    times=pockels.times[start_sample:end_sample]
-    samples_diff=np.diff(sample_array)
-    power_on_times=times[np.where(samples_diff>tol)[0]]
-    num_pulses=len(power_on_times)
-    samples_per_pulse=int(np.floor((end_sample-start_sample)/(num_pulses+1)))
-    mean_voltage=[np.mean(sample_array[(i)*(samples_per_pulse):samples_per_pulse*(i+1)]) for i in range(num_pulses)]
-    return power_on_times, mean_voltage 
-   
-    
-  #   return energy_vs_power
+# plot of stimulation power versus membrane current
+
+
+
+
 if __name__=='__main__':  
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
     pulse_duration_ms=100# 0.1 seconds
-    energy_list=[5,10,15,20,25,30,35,40,1,1,1,1,1,1,1,1,11,1,1,11,1,1,1,1,1,1,1,1,11,1,1,1,1,1,1,11,1,1,1]
-    mean_picker_energies=GetMeanEnergies(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
-    
+    energy_list=np.linspace(0,1.5,39)
+    mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
+    plt.plot(energy_list,mean_picker_volts)
+    picker_max_output_V = 2
+    picker_max_measurement_mW = 500
+    beam_spot_diameter = 8 #in micro meters
+    calibration_fname=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\power_calibration_980nm_8um_spot.dat'
+    Power_density=convert_V_W(mean_picker_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_spot_diameter)
+    plt.plot(energy_list,Power_density)
