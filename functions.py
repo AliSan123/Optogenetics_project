@@ -68,6 +68,58 @@ def smooth(signal,window):
     return np.concatenate((  start , out0, stop  ))
 
 
+def GetMeanEnergies(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
+    ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(smrFile)
+    if test==True:
+        picker=picker[:2530000] #subsetting to simulate real experiment
+    picker_=np.squeeze(picker)
+    #Assume a few seconds of dead time for some cleaning:
+    dead_samples=int(np.floor(dead_time*picker_Hz))
+    picker_dead=picker_[dead_samples:]
+    # find the mean and standard deviation of the voltages when TL is off
+    mean=np.mean(picker_dead[0:dead_samples])
+    std_dev=np.std(picker_dead[0:dead_samples])
+    # first smooth the data 
+    duration=int(np.ceil(picker_Hz*pulse_duration_ms*0.001*1.5)) #index of end - make it 1.5 times longer to ensure we capture the maximum
+    smoothed_picker=smooth(picker_.flatten(),int(np.floor(duration/4)))
+    #use smoothed curve for thresholding
+    tol=mean+2*std_dev
+    cleaned_picker=picker_[np.where(smoothed_picker.magnitude>tol)]    
+    #flip so that it goes from maximum to minimum volts
+    # This makes it easier to calculate the mean pulse energies once picker has ramped up
+    cleaned_picker_flipped=np.flip(cleaned_picker)        
+    # get the number of pulses deployed using what was sent in the code
+    n_pulses=len(energy_list)
+    # Find the start of each pulse in the calibration using maximum energy less tolerance
+    # Average energy over half the pulse duration (once it has ramped up)
+    start=0
+    sample=cleaned_picker_flipped
+    mean_pulse_energies=[]
+    for i in range(len(energy_list)):
+        sample=sample[start:]
+        max_sample=np.max(sample.magnitude)
+        tolN=max_sample-2*std_dev.magnitude
+        pulse_start=np.where(sample>tolN)[0][0] #this is the start within the sample
+        pulse_duration_ms=200
+        pulse_end=int(np.floor(pulse_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
+        #plt.plot(sample[pulse_start:pulse_end])
+        # find the average energy over half the pulse duration
+        half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
+        half_pulse=sample[pulse_start:half_pulse_end]
+        mean_pulse_energy=np.mean(half_pulse)
+        mean_pulse_energies.append(mean_pulse_energy)
+        start=pulse_end
+    
+    return mean_pulse_energies
+
+
+
+
+
+
+
+
+
 
 
 #These two constants allow you to convert the voltage measured at the picker 
@@ -181,12 +233,14 @@ def pockels_ave_pulse_voltage(pockels,start_sample,end_sample,tol=1):
     
     
   #   return energy_vs_power
-# if __name__=='__main__':  
-#     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
-#     ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(file)
-#     start_time=get_event_time(ephys,event_type='calibrate',sequence_number=1)
-#     time_list=[0,5,10,15,25]
-#     picker_calibration_segment(start_time,time_list,picker_Hz,picker,0,0)
+if __name__=='__main__':  
+    file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
+    pulse_duration_ms=100# 0.1 seconds
+    energy_list=[5,10,15,20,25,30,35,40,1,1,1,1,1,1,1,1,11,1,1,11,1,1,1,1,1,1,1,1,11,1,1,1,1,1,1,11,1,1,1]
+    mean_picker_energies=GetMeanEnergies(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
+
+
+
 
 file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
 ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(file)
@@ -220,16 +274,27 @@ n_pulses=len(energy_list)
 #flip so that it goes from maximum to minimum volts - easier to get distinct pulses
 cleaned_picker_flipped=np.flip(cleaned_picker)
 plt.plot(cleaned_picker_flipped)
-# find first pulse
-tol2=max_picker-2*std_dev
-pulse_start=np.where(cleaned_picker_flipped>tol2)[0][0]
-pulse_duration_ms=200
-pulse_end=int(np.floor(pulse_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
-plt.plot(cleaned_picker_flipped[pulse_start:pulse_end])
-# find the average energy over half the pulse duration
-half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
-half_pulse=cleaned_picker_flipped[pulse_start:half_pulse_end]
-mean_pulse_energy=np.mean(half_pulse)
+
+# Find the start of each pulse using maximum-tolerance, average energy over half the pulse duration
+start=0
+sample=cleaned_picker_flipped
+mean_pulse_energies=[]
+for i in range(len(energy_list)):
+    sample=sample[start:]
+    max_sample=np.max(sample.magnitude)
+    tolN=max_sample-2*std_dev.magnitude
+    pulse_start=np.where(sample>tolN)[0][0] #this is the start within the sample
+    pulse_duration_ms=200
+    pulse_end=int(np.floor(pulse_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
+    plt.plot(sample[pulse_start:pulse_end])
+    # find the average energy over half the pulse duration
+    half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
+    half_pulse=sample[pulse_start:half_pulse_end]
+    mean_pulse_energy=np.mean(half_pulse)
+    mean_pulse_energies.append(mean_pulse_energy)
+    start=pulse_end
+
+
 
 #pulse 2
 #from pulse_end onwards, find the next maximum
@@ -243,27 +308,58 @@ half_pulse2_end=int(np.floor(pulse2_start+pulse_duration_ms/2*0.001*picker_Hz.ma
 half_pulse2=sample2[pulse2_start:half_pulse2_end]
 mean_pulse2_energy=np.mean(half_pulse2)
 
+#pulse 3
+sample3=cleaned_picker_flipped[pulse2_end:]
+max3=max(sample3)
+tol4=max3-2*std_dev
+pulse3_start=np.where(sample3>tol4)[0][0]
+pulse3_end=int(np.floor(pulse3_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
+plt.plot(sample3[pulse3_start:pulse3_end])
+half_pulse3_end=int(np.floor(pulse3_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
+half_pulse3=sample2[pulse3_start:half_pulse3_end]
+mean_pulse3_energy=np.mean(half_pulse3)
+
+#pulse 4
+sample4=cleaned_picker_flipped[pulse3_end:40000]
+plt.plot(sample4)
+max4=max(sample4)
+tol5=max4-2*std_dev
+pulse4_start=np.where(sample4>tol5)[0][0]
+pulse4_end=int(np.floor(pulse3_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
+plt.plot(sample3[pulse3_start:pulse3_end])
+half_pulse3_end=int(np.floor(pulse3_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
+half_pulse3=sample2[pulse3_start:half_pulse3_end]
+mean_pulse3_energy=np.mean(half_pulse3)
+
+
 #pulse N 
+plt.plot(cleaned_picker_flipped)
+sampleX=cleaned_picker_flipped[12*2000:13*2000]
+plt.plot(sampleX)
+
+
 # this loop gets stuck after pulse 3
-sample_start=0
 mean_pulse_energies=[]
-count=0
-while count< len(energy_list):
-    print(sample_start)
-    print(count)
-    sample=cleaned_picker_flipped[sample_start:]
+pulse=0
+#samples_length=int(np.floor(pulse_duration_ms*0.001*picker_Hz.magnitude))
+samples_length= int(np.floor(116353/39))
+for pulse in range(len(energy_list)):
+    print(pulse)    
+    sample=cleaned_picker_flipped[(samples_length*pulse):(samples_length*(pulse+1))]
+    print(samples_length*pulse)
     local_max_power=max(sample)
-    tol=local_max_power-2*std_dev
-    pulse_start=np.where(sample.magnitude>tol)[0][0]
-    pulse_end=int(np.floor(pulse_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
-    half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
-    half_pulse_ON=sample[pulse_start:half_pulse_end]
-    mean_pulse_energy=np.mean(half_pulse_ON)
-    print(mean_pulse_energy)
-    mean_pulse_energies.append(mean_pulse_energy)
-    sample_start=sample_start+pulse_end
-    print(sample_start)
-    count=count+1
+    print('Local max: 2%f' %local_max_power)
+    # tol=local_max_power-2*std_dev
+    # pulse_start=np.where(sample.magnitude>tol)[0][0]
+    # print('Pulse start: 2%f ' %pulse_start)
+    # pulse_end=int(np.floor(pulse_start+pulse_duration_ms*0.001*picker_Hz.magnitude))
+    # print('Pulse end: 2%f' %pulse_end)
+    # half_pulse_end=int(np.floor(pulse_start+pulse_duration_ms/2*0.001*picker_Hz.magnitude))
+    # half_pulse_ON=sample[pulse_start:half_pulse_end]
+    # mean_pulse_energy=np.mean(half_pulse_ON)
+    # print('Mean energy: 2%f' %mean_pulse_energy)
+    # mean_pulse_energies.append(mean_pulse_energy)
+    pulse+=1
 
 
 samples_per_pulse=2*int(np.floor((end_sample-start_sample)/(n_pulses+1)))
