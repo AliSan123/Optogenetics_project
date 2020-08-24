@@ -1,5 +1,5 @@
-# arduino.close_port()
-# coherent.close_port()
+arduino.close_port()
+coherent.close_port()
 
 import os
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
@@ -55,11 +55,11 @@ class Ui(QtWidgets.QMainWindow):
         self.RunButton.clicked.connect(self.OpenSafetyWindow)
      
 #       Cell Experiments
-        self.energy_radio.clicked.connect(self.toggle_radio)
-        self.MRR_radio.clicked.connect(self.toggle_radio)
-        self.step_intervals.clicked.connect(self.toggle_radio)
-        self.custom_list.clicked.connect(self.toggle_radio)
-        self.setCellParams.clicked.connect(self.getCellParamVals)    
+        # self.energy_radio.clicked.connect(self.toggle_radio)
+        # self.MRR_radio.clicked.connect(self.toggle_radio)
+        # self.step_intervals.clicked.connect(self.toggle_radio)
+        # self.custom_list.clicked.connect(self.toggle_radio)
+        # self.setCellParams.clicked.connect(self.getCellParamVals)    
         
         
 #       HOME SCREEN  
@@ -281,7 +281,6 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         #Open new window for results
         NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,self.CalibrationFile,energy_list,self.pulse_duration_ms,self.picker_max_output,self.picker_max_measurement,self.beam_diameter)
         NewWindow.exec_()     
-
  
 
 # After laser calibration run
