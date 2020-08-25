@@ -15,13 +15,16 @@ import shutil
 import Coherent
 import Arduino
 import functions as f
+import pandas as pd
+from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import pyqtgraph as pg
 import pyqtgraph.exporters
 
 
 SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
-UploadPowCalResults_ui,_=uic.loadUiType('UploadPowCalResults.ui')
+UploadCalResults_ui,_=uic.loadUiType('UploadCalResults.ui')
+UploadPart1Results_ui,_=uic.loadUiType('UploadPart1Results.ui')
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self,arduino,coherent):
@@ -47,25 +50,43 @@ class Ui(QtWidgets.QMainWindow):
         self.CreateTimeFolder.clicked.connect(self.clickedCreateTimeFolder)
         self.set4.clicked.connect(self.SetTimeDirectory)
         self.BrowseButton2.clicked.connect(self.UploadCalibrationFile)
+        self.PushButtonCalibration.clicked.connect(self.PlotCalibration)
+        self.closeFigure_2.clicked.connect(lambda: self.closefigure(1))
         self.NextButton.clicked.connect(self.GoToPowerCalibration)
 
 #       POWER CALIBRATION TAB            
         self.setParams.clicked.connect(self.getParamVals) 
-        self.setParams.clicked.connect(self.RunButtonToGreen)
-        self.RunButton.clicked.connect(self.OpenSafetyWindow)
+        self.setParams.clicked.connect(lambda: self.RunButtonToGreen(button=self.RunButton))
+        self.RunButton.clicked.connect(lambda: self.OpenSafetyWindow('calibration'))
      
-#       Cell Experiments
-        # self.energy_radio.clicked.connect(self.toggle_radio)
-        # self.MRR_radio.clicked.connect(self.toggle_radio)
-        # self.step_intervals.clicked.connect(self.toggle_radio)
-        # self.custom_list.clicked.connect(self.toggle_radio)
-        # self.setCellParams.clicked.connect(self.getCellParamVals)    
+#       Cell Experiments Part 1 - Kd
+        self.setCellParams.clicked.connect(self.getCellParamVals)   
+        self.setCellParams.clicked.connect(lambda: self.RunButtonToGreen(button=self.RunButton_3))
+        self.RunButton_3.clicked.connect(lambda: self.OpenSafetyWindow('cells_KD'))
+
+#       Cell Experiments Part 2 - Optimisation
         
+
         
 #       HOME SCREEN  
     def OpenTermsOfUse(self):
         TOU=TermsOfUse()
         TOU.exec_()
+
+    def closefigure(self,figure):
+        plt.close(fig=figure)
+
+    def PlotCalibration(self):
+        CalibrationFile=self.lineEditFile.text()
+        power_calibration=np.loadtxt(CalibrationFile)
+        #plot the calibration
+        plt.figure(1,figsize=(15,10))
+        power_onto_cell_mW=power_calibration[1,:]
+        cal_picker_power_mW=power_calibration[0,:]
+        f.plot_data(cal_picker_power_mW,power_onto_cell_mW,'Picker power (mW)','Power onto cell (mW)',\
+                    'Calibration curve: Power onto cell vs Picker power',None,111,show=False)
+        plt.savefig(self.getDailyDirectory() + '//Plot of Power onto cell vs Picker Power.png')
+        plt.show()
     
     def SetupColourtoGreen(self):
         self.SetupButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
@@ -149,13 +170,22 @@ class Ui(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(2)
 
 #       POWER CALIBRATION
-    def OpenSafetyWindow(self): 
-        MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter=self.getParamVals()
+    def OpenSafetyWindow(self,section): 
+        if section=='calibration':
+            pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement=self.getParamVals()
+            exp_label='cal'# not ued but need to set to pass into class
+        elif section == 'cells_KD':
+            exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps=self.getCellParamVals()
+            # the following aren't used but are just set so they can be passed into the next class
+            picker_max_output=500
+            picker_max_measurement=2
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
         CalibrationFile=self.lineEditFile.text()
-        SW=SafetyWindow(self.arduino,self.coherent,DailyDirectory,TimeDirectory,CalibrationFile,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter)
+        print(section)
+        SW=SafetyWindow(self.arduino,self.coherent,section,DailyDirectory,TimeDirectory,CalibrationFile,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,exp_label)
         SW.exec_()
+        self.tabWidget.setCurrentIndex(3)
         
     def getParamVals(self):
         #Fixed params
@@ -172,61 +202,72 @@ class Ui(QtWidgets.QMainWindow):
         PulsesPerMBurst=combo_lst[3]
         # Variable (energy) params
         min_energy_as_frac=self.energy_spinbox.value()/100
-        print('min energy as frac= %2f'%min_energy_as_frac)
         max_energy_as_frac=self.energy_spinbox_2.value()/100
-        print('max energy as frac= %2f'%max_energy_as_frac)
         steps=self.energy_spinbox_3.value() #how many energy values do you want to test?
         delta_energy=(max_energy_as_frac-min_energy_as_frac)/steps #"delta" -change in energy with each ramp up
         n_times=self.energy_spinbox_4.value()
  
-        return MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter
+        return pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement
               
-    def RunButtonToGreen(self):
-        self.RunButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+    def RunButtonToGreen(self,button):       
+        button.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.RunButton.setIcon(icon)
+        button.setIcon(icon)
         
-# Cell Experiments
-    def toggle_radio(self):
-        if self.energy_radio.isChecked():
-           #change style sheet
-           self.energy_title.setStyleSheet("background-color: rgba(0, 153, 255, 50)")
-           if self.step_intervals.isChecked():
-               self.min_energy_spin.setStyleSheet("")
-               self.min_energy_spin.setReadOnly(False)
-               self.max_energy_spin.setStyleSheet("")
-               self.max_energy_spin.setReadOnly(False)
-               self.energy_steps.setStyleSheet("")
-               self.energy_steps.setReadOnly(False)
-           elif self.custom_list.isChecked():
-               self.custom_list_combo.setStyleSheet("")
-               self.custom_list_combo.setEditable(True)
-               
-        elif self.MRR_radio.isChecked():
-            self.MRR_heading.setStyleSheet("background-color: rgba(0, 153, 255, 50)")
-            self.MRRcomboBox_2.setStyleSheet("")
-            self.MRRcomboBox_2.setEditable(True)
-            
-            
+# Cell Experiments - Constant
+      
     def getCellParamVals(self):
+        # Fixed values
         exp_label=self.exp_label.text()
         pulse_duration_ms=self.pulse_duration.value()
+        interpulseinterval=self.IPISpinBBox_2.value()
         beam_diameter=self.BeamDiamSpinBBox_3.value()
+        MRR=self.MRR_lineEdit.text()
         PW_in_fs=self.PWdoubleSpinBox_2.value()
         RRDivisor=self.lineEdit_3.text()
         PulsesPerMBurst=self.lineEdit_4.text() 
-        n_times=self.n_times_spinbox.value()
+        # Variable values
+        min_energy_as_frac=self.energy_spinbox_min.value()/100
+        max_energy_as_frac=self.energy_spinbox_max.value()/100
+        steps=self.steps_spinBox.value() #how many energy values do you want to test?
+        delta_energy=(max_energy_as_frac-min_energy_as_frac)/steps #"delta" -change in energy with each ramp up
+        n_times=self.n_samples_spinBox.value()
+        return exp_label,pulse_duration_ms,beam_diameter,MRR,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps
+
+# Terms of use pop-up box
+class TermsOfUse(QDialog):
+    def __init__(self):
+        super(TermsOfUse,self).__init__()
+        uic.loadUi('TermsOfUse.ui',self)
         
+        self.TrainingButton.clicked.connect(self.OpenLaserTraining)
+        self.LaserManualButton.clicked.connect(self.OpenLaserManual)
+        self.ReportButton.clicked.connect(self.OpenReport)
+    
+    def OpenLaserTraining(self):
+        path=r'http://www.imperial.ac.uk/safety/safety-by-topic/laboratory-safety/laser-safety/lasersafetytraining/'
+        webbrowser.open(path)
+    
+    def OpenLaserManual(self):
+        path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
+        webbrowser.open(path)
+    
+    def OpenReport(self):
+        path=r'https://github.com/AliSan123/Optogenetics_project'
+        webbrowser.open(path)
+
+
         
 class SafetyWindow(QDialog,SafetyWindow_ui):
-    def __init__(self,arduino,coherent,DailyDirectory,TimeDirectory,CalibrationFile,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_as_frac,pulse_duration_ms,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement,beam_diameter):
+    def __init__(self,arduino,coherent,section,DailyDirectory,TimeDirectory,CalibrationFile,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps,picker_max_output=500,picker_max_measurement=2,exp_label='exp'):
         QDialog.__init__(self)
         SafetyWindow_ui.__init__(self)
         self.setupUi(self)
       
         self.arduino=arduino
         self.coherent=coherent
+        self.section=section
         self.TimeDirectory=TimeDirectory
         self.DailyDirectory=DailyDirectory
         self.CalibrationFile=CalibrationFile
@@ -235,18 +276,20 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         self.PW_in_fs=PW_in_fs
         self.RRDivisor=RRDivisor
         self.PulsesPerMBurst=PulsesPerMBurst
-        self.energy_as_frac=energy_as_frac
+        self.delta_energy=delta_energy
         self.pulse_duration_ms=pulse_duration_ms
         self.n_times=n_times
         self.steps=steps   
         self.interpulseinterval=interpulseinterval          
         self.picker_max_output=picker_max_output
         self.picker_max_measurement=picker_max_measurement
-        self.beam_diameter=beam_diameter
-        
+        self.beam_diameter=beam_diameter    
+        self.exp_label=exp_label
+       
         self.checkBoxKeyswitch.stateChanged.connect(self.ChangeColour)
         self.LaserManualButton2.clicked.connect(self.OpenLaserManual) 
-        self.SWRunButton.clicked.connect(self.StartLaserCalibration)           
+        self.SWRunButton.clicked.connect(self.StartLaser)           
+        
         
         
     def ChangeColour(self):          
@@ -259,41 +302,54 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
     def OpenLaserManual(self):
         path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
         webbrowser.open(path)
-
-    def StartLaserCalibration(self):
+        
+    def getEnergyList(self):
+        energy_list=[]
+        for i in range(int(self.steps)):
+            energy_list.append(np.repeat(self.delta_energy*(i),self.n_times))
+        energy_list=np.asarray(energy_list).flatten()
+        # for the cell experiments, we want to randomise the powers
+        if self.section=='cells_KD':
+            print(energy_list)
+            np.random.shuffle(energy_list)  
+            print(energy_list)
+        return energy_list
+    
+    def StartLaser(self):
         self.coherent.startup() #start laser from standby - checks and Pulse Mode=1
         self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst) #set parameters
-        energy_list=[]
+        energy_list=self.getEnergyList()
         # the following increases the energy % sent with each loop with the 
         # option to repeat an energy level n_times
-        for i in range(int(self.steps)):               
-            self.energy_as_frac*(i)
-            print('Energy sent is: '+ str(self.energy_as_frac*(i)))
-            self.coherent.set_energy(self.energy_as_frac*(i))
+        for energy in energy_list:               
+            print(energy)
+            self.coherent.set_energy(energy)
             self.coherent.start_lasing()
-            self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)               
-            energy_list.append(np.repeat(self.energy_as_frac*(i),self.n_times))                           
+            self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)                                          
         self.coherent.stop_lasing()
-        print('Completed lasing Power')
-        energy_list=np.asarray(energy_list).flatten()
-        print(energy_list)
+        print('Completed lasing')
         self.close() # close window
+        
         #Open new window for results
-        NewWindow=UploadResults(self.DailyDirectory,self.TimeDirectory,self.CalibrationFile,energy_list,self.pulse_duration_ms,self.picker_max_output,self.picker_max_measurement,self.beam_diameter)
-        NewWindow.exec_()     
- 
+        if self.section=='calibration':
+            NewWindow=UploadCalResults(self.DailyDirectory,self.TimeDirectory,self.CalibrationFile,energy_list,self.pulse_duration_ms,self.picker_max_output,self.picker_max_measurement,self.beam_diameter)
+            NewWindow.exec_()     
+        elif self.section=='cells_KD':
+            DiffWindow=UploadPart1Results(self.DailyDirectory,self.TimeDirectory,energy_list,self.pulse_duration_ms,self.beam_diameter)
+            DiffWindow.exec_()
+        
 
 # After laser calibration run
-class UploadResults(QDialog,UploadPowCalResults_ui):
+class UploadCalResults(QDialog,UploadCalResults_ui):
     def __init__(self,DailyDirectory,TimeDirectory,CalibrationFile,energy_list,pulse_duration_ms,picker_max_output_V,picker_max_measurement_mW,beam_diameter):
         QDialog.__init__(self)
-        UploadPowCalResults_ui.__init__(self)
+        UploadCalResults_ui.__init__(self)
         self.setupUi(self)
        
         self.DailyDirectory=DailyDirectory
         self.TimeDirectory=TimeDirectory 
         self.CalibrationFile=CalibrationFile
-        self.energy_list=energy_list # energy or MRR depending on Type
+        self.energy_list=energy_list 
         self.pulse_duration_ms=pulse_duration_ms
         self.picker_max_output_V=picker_max_output_V
         self.picker_max_measurement_mW=picker_max_measurement_mW
@@ -303,9 +359,8 @@ class UploadResults(QDialog,UploadPowCalResults_ui):
         self.BrowseButtonPC.clicked.connect(self.Upload)
         self.PushButtonChannels.clicked.connect(self.PlotChannels)
         self.closeFigure.clicked.connect(lambda: self.closefigure(1))
-        self.PushButtonCalibration.clicked.connect(self.PlotCalibration)
-        self.closeFigure_2.clicked.connect(lambda: self.closefigure(2))
         
+
         self.AnalyseButton.clicked.connect(self.analyseCalibration)
         
         
@@ -334,64 +389,105 @@ class UploadResults(QDialog,UploadPowCalResults_ui):
             'Picker power meter (measurement output) voltage vs time',None,311,show=False)
         f.plot_data(Vm.times,np.squeeze(Vm),None,f'Membrane Voltage\n({Vm.units})','Membrane voltage vs time',[-50,-10],312,show=False)     
         f.plot_data(Im.times,np.squeeze(Im),None,f'Membrane Current\n({Im.units})','Membrane current vs time',[-1,1],313,show=False)
-        plt.savefig(self.TimeDirectory + '//Figure 1- Plot of Ephys Channels.png')
+        plt.savefig(self.TimeDirectory + '//Figure 1- Plot of Ephys Channels (calibration).png')
         plt.show()    
     
-    def closefigure(self,figure):
-        plt.close(fig=figure)
 
-    def PlotCalibration(self):
-        power_calibration=np.loadtxt(self.CalibrationFile)
-        #plot the calibration
-        plt.figure(2,figsize=(15,10))
-        power_onto_cell_mW=power_calibration[1,:]
-        cal_picker_power_mW=power_calibration[0,:]
-        f.plot_data(cal_picker_power_mW,power_onto_cell_mW,'Picker power (mW)','Power onto cell (mW)',\
-                    'Calibration curve: Power onto cell vs Picker power',None,111,show=False)
-        plt.savefig(self.TimeDirectory + '//Figure 2- Plot of Power onto cell vs Picker Power.png')
-        plt.show()
 
     def analyseCalibration(self):
         ephysfile=self.lineEditDir.text() #ephys .smr file
         mean_picker_volts=f.GetMeanVolts(ephysfile,self.pulse_duration_ms,self.energy_list,dead_time=2,test=True)
-        plt.figure(3,figsize=(15,10))
+        plt.figure(2,figsize=(15,10))
         f.plot_data(self.energy_list,mean_picker_volts,'Input RL energy (%)','Mean Picker volts (V))',\
                     'Calibration curve: Mean Picker Volts versus Input RL energy',None,111,show=False)
-        plt.savefig(self.TimeDirectory + '//Figure 3- Plot of Mean Picker Volts versus Input RL energy.png')
+        plt.savefig(self.TimeDirectory + '//Figure 2- Plot of Mean Picker Volts versus Input RL energy.png')
         plt.show()
         
-        plt.figure(4,figsize=(15,10))
+        plt.figure(3,figsize=(15,10))
         Power_density=f.convert_V_W(mean_picker_volts,self.picker_max_measurement_mW,self.picker_max_output_V,self.CalibrationFile,self.beam_diameter)
+        
         f.plot_data(self.energy_list,Power_density,'Input RL energy (%)','Mean Power Density in sample (mW/um2))',\
                     'Calibration curve: Mean Power Density in sample versus Input RL energy',None,111,show=False)
-        plt.savefig(self.TimeDirectory + '//Figure 4- Plot of Mean Power Density in sample versus Input RL energy.png')
+        plt.savefig(self.TimeDirectory + '//Figure 3- Plot of Mean Power Density in sample versus Input RL energy.png')
         plt.show()
-
         
-# Terms of use pop-up box
-class TermsOfUse(QDialog):
-    def __init__(self):
-        super(TermsOfUse,self).__init__()
-        uic.loadUi('TermsOfUse.ui',self)
+        data={'energy_list':self.energy_list, 'mean_picker_volts':mean_picker_volts, 'Power_density':Power_density}
+        results=pd.DataFrame(data=data)
+        results.to_csv(self.TimeDirectory + '//Mean power density in sample vs energy list.csv')
+        #Once saved, close window and go to next tab
+        self.close()
         
-        self.TrainingButton.clicked.connect(self.OpenLaserTraining)
-        self.LaserManualButton.clicked.connect(self.OpenLaserManual)
-        self.ReportButton.clicked.connect(self.OpenReport)
+# After Cell experiments Part 1  run
+class UploadPart1Results(QDialog,UploadPart1Results_ui):
+    def __init__(self,DailyDirectory,TimeDirectory,energy_list,pulse_duration_ms,beam_diameter):
+        QDialog.__init__(self)
+        UploadPart1Results_ui.__init__(self)
+        self.setupUi(self)
     
-    def OpenLaserTraining(self):
-        path=r'http://www.imperial.ac.uk/safety/safety-by-topic/laboratory-safety/laser-safety/lasersafetytraining/'
-        webbrowser.open(path)
+        self.DailyDirectory=DailyDirectory
+        self.TimeDirectory=TimeDirectory 
+        self.energy_list=energy_list 
+        self.pulse_duration_ms=pulse_duration_ms
+        self.beam_diameter=beam_diameter
     
-    def OpenLaserManual(self):
-        path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
-        webbrowser.open(path)
-    
-    def OpenReport(self):
-        path=r'https://github.com/AliSan123/Optogenetics_project'
-        webbrowser.open(path)
-
-
-
+        self.BrowseButtonPC.clicked.connect(self.Upload)
+        self.PushButtonChannels.clicked.connect(self.PlotChannels)
+        self.closeFigure.clicked.connect(lambda: self.closefigure(1))
+        
+        self.AnalyseButton.clicked.connect(self.analyse)
+        
+    def PlotChannels(self):
+        ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=f.loadEphysData(self.lineEditDir.text())
+        # plot the data
+        plt.figure(1,figsize=(20,15))
+        f.plot_data(picker.times,np.squeeze(picker),'Time (s)','Picker power meter\nmeasurement output (V)',\
+            'Picker power meter (measurement output) voltage vs time',None,311,show=False)
+        f.plot_data(Vm.times,np.squeeze(Vm),None,f'Membrane Voltage\n({Vm.units})','Membrane voltage vs time',[-50,-10],312,show=False)     
+        f.plot_data(Im.times,np.squeeze(Im),None,f'Membrane Current\n({Im.units})','Membrane current vs time',[-1,1],313,show=False)
+        plt.savefig(self.TimeDirectory + '//Figure 5- Plot of Ephys Channels (Part 1).png')
+        plt.show()   
+        
+    def Upload(self):
+        results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
+        newPath=shutil.copy(results_fname,self.TimeDirectory + '\\' + 'cell_exp_1_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
+        self.lineEditDir.setText(newPath)      
+        self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.AnalyseButton.setIcon(icon)
+       
+    def analyse(self):
+        ephysfile=self.lineEditDir.text() #ephys .smr file
+        min_current_vals=f.GetCurrent(ephysfile,self.pulse_duration_ms,self.energy_list,divisor=50,dead_time=2,test=True)
+        plt.figure(4,figsize=(15,10))
+        f.plot_data(self.energy_list,min_current_vals,'Input RL energy (%)','Minimum (averaged) Membrane Current (nA))',\
+                    'Calibration curve: Minimum (averaged) Membrane Current versus Input RL energy',None,111,show=False)
+        plt.savefig(self.TimeDirectory + '//Figure 2- Plot of Minimum (averaged) Membrane Current versus Input RL energy.png')
+        plt.show()
+        
+        cal_results=pd.read_csv(self.TimeDirectory + '//Mean power density in sample vs energy list.csv')
+        x_data=cal_results['energy_list']
+        y_data=cal_results['Power_density']
+        #interpolation function which will be used to get the power at a given energy value
+        interpld=interp1d(x_data,y_data) 
+        new_Power_Density=interpld(self.energy_list)#This give sinterpolated power vals for experimental energy values 
+        current_density=min_current_vals/(np.pi*(self.beam_diameter/2)**2)
+        
+        data={'energy_list':self.energy_list,'power_density':new_Power_Density,'current_density':current_density, 'min_current_vals':min_current_vals}
+        results=pd.DataFrame(data=data)
+        results.to_csv(self.TimeDirectory + '// Minimum (averaged) Membrane Current vs Mean Power Density in sample.csv')
+        
+        #Find Kd - this should be a function
+        Kd=f.getKd(new_Power_Density,current_density)
+        # Imax=np.max(current_density)
+        # I_half_max=Imax/2
+        # f2=interp1d(current_density,new_Power_Density)#interpolate x-axis
+        # ynew=I_half_max
+        # Kd=f2(ynew)
+        print('Kd='+str(Kd))
+        #Once saved, close window and go to next tab
+        self.close()
+        
 #############################################################################
 if __name__ == "__main__":
     arduino=Arduino.Arduino('COM3',9600) #open the port

@@ -22,7 +22,7 @@ class Coherent:
             self.serial_port=open('./test.txt','w')
         else:
             self.serial_port=serial.Serial(serial_port,baudrate)
-            self.__readline__()           
+            self._readline_()           
    
     def startup(self):
         """
@@ -30,31 +30,31 @@ class Coherent:
         
         """        
         #Turn on the chiller
-        self.__write__('CHEN=1') #Enables the chiller several minutes before turning on laser
+        self._write_('CHEN=1') #Enables the chiller several minutes before turning on laser
 
         if self.test:
             time.sleep(1) 
         else:
             time.sleep(180)#180s = 3 minutes before turning on laser (manual 4-22)
             
-        self.__write__('?K') #Check keyswitch is on
+        self._write_('?K') #Check keyswitch is on
         
         if self.test:
             keyswitch=1
         else:
-            keyswitch=int(self.__readline__())
+            keyswitch=int(self._readline_())
 
         if keyswitch==1:     #If the keyswitch is on:
               print('Keyswitch is Enabled. Laser is starting up from standby.')
-              self.__write__('PM=1')# Declare pulse mode, n=1 for Gated mode (p6-12)
+              self._write_('PM=1')# Declare pulse mode, n=1 for Gated mode (p6-12)
               
               #Check for warnings and faults
-              self.__write__('?F')
+              self._write_('?F')
               if not self.test:
-                  self.__readline__() 
-              self.__write__('?W')
+                  self._readline_() 
+              self._write_('?W')
               if not self.test:
-                  self.__readline__() 
+                  self._readline_() 
         else:
               print('Keyswitch is off. Set keyswitch to the <ENABLE> position')
 
@@ -64,7 +64,7 @@ class Coherent:
         This function sets the command repetition rate. This will be called upon and varied often during experiment.
         
         """        
-        self.__write__(f'SET={MRR_in_kHz},{PW_in_fs},{RRDivisor},{PulsesPerMBurst}') # Declare initial parameters (p6-14)
+        self._write_(f'SET={MRR_in_kHz},{PW_in_fs},{RRDivisor},{PulsesPerMBurst}') # Declare initial parameters (p6-14)
         
         
     def set_energy(self, energy_in_percent):
@@ -72,7 +72,7 @@ class Coherent:
         This function sets the command energy level (0-100% of 40J). This will be called upon and varied often during experiment.
         
         """         
-        self.__write__(f'RL={energy_in_percent}')
+        self._write_(f'RL={energy_in_percent}')
                 
     
     def start_lasing(self):
@@ -80,22 +80,22 @@ class Coherent:
         This function sends the commands to laser to turn on and start pulsing
         
         """  
-        self.__write__('L=1')   # Turn on diodes - they will ramp to set current in ~30s, allow >45 min to achieve operating temperature
+        self._write_('L=1')   # Turn on diodes - they will ramp to set current in ~30s, allow >45 min to achieve operating temperature
         if not self.test:
             time.sleep(40)
             
-        self.__write__('?ST')         
+        self._write_('?ST')         
         if not self.test:
-            self.__readline__()
+            self._readline_()
                 
-        self.__write__('PC=1')        # Turn on pulses, no response
+        self._write_('PC=1')        # Turn on pulses, no response
         
-        self.__write__('S=1')         # Open Shutter, shutter indicator will light on the power supply front panel
+        self._write_('S=1')         # Open Shutter, shutter indicator will light on the power supply front panel
     
     def stop_lasing(self):
-        self.__write__('S=0')    #Closes the shutter and turns off pulsing
+        self._write_('S=0')    #Closes the shutter and turns off pulsing
     
-    def __write__(self,command):
+    def _write_(self,command):
         '''
         This function writes a serial command and prints what is sent to screen.
         comman: (str) serial command to be sent     
@@ -105,8 +105,9 @@ class Coherent:
             print(f'Sent: {command}')
         else:
             self.serial_port.write(command+'\n')
-
-    def __readline__(self):
+            print(f'Sent: {command}')
+            
+    def _readline_(self):
         '''
         This function reads the serial message and prints message to screen.
         '''

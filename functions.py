@@ -3,6 +3,7 @@ import neo #https://neo.readthedocs.io/en/stable/
 import numpy as np
 from scipy.interpolate import interp1d
 import scipy
+import pandas
 
 def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,show=True):
     plt.subplot(subplot)
@@ -89,7 +90,7 @@ def GetMeanVolts(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
 
     Returns
     -------
-    mean_pulse_volts : list
+    mean_pulse_volts : array
         The mean picker volts.
 
     '''
@@ -140,7 +141,7 @@ def GetMeanVolts(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
     return mean_pulse_volts
 
     
-def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_diameter):
+def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_diameter):    
     #power (mW) directly proportional to voltage (V); y=mx
     m=picker_max_measurement_mW/picker_max_output_V #Y/X
     picker_power=mean_pulse_volts*m
@@ -157,24 +158,47 @@ def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,c
     return  Power_density
 
 
-def GetCurrent(smrFile,pulse_duration_ms,interpulseinterval,energy_list,tol=-0.1,dead_time=2,test=False):
+def GetCurrent(smrFile,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test=False):
+    '''
+    Parameters
+    ----------
+    smrFile : string
+        Path to the electrophysiology .smr data file.
+    pulse_duration_ms : float
+        The time in milliseconds for which the TTL is HIGH.
+    energy_list : list
+        A list of input RL energy percentages
+    divisor : int, optional
+        This determines the size of the window around the minimum current. 
+        Larger divisor means smaller window for averaging. The default is 50.
+    dead_time : int, optional
+        A number of seconds of recorded electrophysiology data before the first TTL High signal.
+        Used to determine the baseline mean and noise. The default is 2 seconds.
+    test : boolean, optional
+        For testing, subsets testing data. The default is False.
+
+    Returns
+    -------
+    min_current_vals : array
+        The minimum current values orresponding to the pulses.
+    ''' 
     ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=loadEphysData(smrFile)
     if test==True:
-        Im=Im[9000000:11000000] #subsetting to simulate real experiment
+        Im=Im[10000000:11000000] #subsetting to simulate real experiment
         #plt.plot(np.squeeze(Im[10072500:10076500])) #This is the first single pulse
 
     Im_=np.squeeze(Im)
     #Assume a few seconds of dead time for some cleaning:
-    # dead_samples=int(np.floor(dead_time*Im_Hz))
-    # Im_dead=Im_[dead_samples:]
+    dead_samples=int(np.floor(dead_time*Im_Hz))
+    Im_dead=Im_[dead_samples:]
     # # find the mean and standard deviation of the voltages when TL is off
-    # mean=np.mean(Im_dead[0:dead_samples])
-    # std_dev=np.std(Im_dead[0:dead_samples])
+    mean=np.mean(Im_dead[0:dead_samples])
+    std_dev=np.std(Im_dead[0:dead_samples])
     # first smooth the data 
     duration=int(np.ceil(Im_Hz*(pulse_duration_ms*0.001))) #index of end - make it 1.5 times longer to ensure we capture the maximum
     smoothed_Im=smooth(Im_.flatten(),int(np.floor(duration/4)))
     #use smoothed curve for thresholding
-    # tol=mean-2*std_dev
+    tol=mean-2*std_dev
     cleaned_Im=Im_[np.where(smoothed_Im.magnitude<tol)] 
     #flip so that the noise at the beginnign is ignored
     cleaned_Im_flipped=np.flip(cleaned_Im)
@@ -184,27 +208,24 @@ def GetCurrent(smrFile,pulse_duration_ms,interpulseinterval,energy_list,tol=-0.1
     i=0
     for i in range(len(energy_list)):
         sample=cleaned_Im_flipped[(window*i):(window*(i+1))]
-        min_sample=min(sample)
-        min_current_vals.append(min_sample)
+        min_sample_index=np.asarray(np.where(sample==min(sample))).ravel()[0]
+        #the buffer is the points around the minimum value which we'll average to reduce noise
+        buffer=int(np.floor(duration/divisor))
+        min_sample_ave=np.mean(sample[min_sample_index-buffer:min_sample_index +buffer])
+        min_current_vals.append(min_sample_ave)
         i+=1
         #plt.plot(mins)
     min_current_vals=np.flip(min_current_vals)
     return min_current_vals
     
-  
-    
-  
 
+def Michaelis_Menten_model(P,Imax,Kd):
+    Ipeak=Imax*P/(P+Kd)
+    return Ipeak
 
-
-
-
-
-
-# def Michaelis_Menten_model(P,Imax,Kd):
-#     Ipeak=Imax*P/(P+Kd)
-#     return Ipeak
-
+def getKd(power_data,current_data):
+    popt,pcov=scipy.optimize.curve_fit(Michaelis_Menten_model,power_data,current_data)
+    return popt[1]
 
 if __name__=='__main__':  
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
@@ -222,15 +243,16 @@ if __name__=='__main__':
     # xnew=np.arange(0,0.5,0.1)
     # ynew=f(xnew)
     # #plt.plot(energy_list,Power_density,'o',xnew,ynew,'-')
-    energy_list=np.linspace(0,39,39)
+    energy_list=np.linspace(0,39,30)
     pulse_duration_ms=5
-    interpulseinterval=1
-    min_current_vals=GetCurrent(file,pulse_duration_ms,interpulseinterval,energy_list,dead_time=2,test=True)
+    min_current_vals=GetCurrent(file,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test=True)
     plt.plot(min_current_vals)
     # xnew=cell_energy_list
     # new_power_density=f(xnew) # these give the power densities of the new energy list
     # current_density=min_current_vals/(np.pi*(beam_diameter/2)**2)
     # plt.plot(new_power_density,current_density) #this is what you use to extract kd
+
+    
     # Imax=max(current_density)
     # I_half_max=Imax/2
     # f2=interp1d(new_power_density,current_density,axis=0)#interpolate x-axis
