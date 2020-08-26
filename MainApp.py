@@ -1,5 +1,5 @@
-# arduino.close_port()
-# coherent.close_port()
+arduino.close_port()
+coherent.close_port()
 
 import os
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
@@ -18,6 +18,7 @@ import functions as f
 import pandas as pd
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d, Axes3D 
 import pyqtgraph as pg
 import pyqtgraph.exporters
 
@@ -25,6 +26,7 @@ import pyqtgraph.exporters
 SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
 UploadCalResults_ui,_=uic.loadUiType('UploadCalResults.ui')
 UploadPart1Results_ui,_=uic.loadUiType('UploadPart1Results.ui')
+UploadPart2Results_ui,_=uic.loadUiType('UploadPart2Results.ui')
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self,arduino,coherent):
@@ -186,7 +188,7 @@ class Ui(QtWidgets.QMainWindow):
 
         else: #section ='cells_opt '
             print(section)
-            exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval=self.getCellParamVals()
+            exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval=self.getCellParamVals2()
             
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
@@ -256,9 +258,7 @@ class Ui(QtWidgets.QMainWindow):
         Kd_path=TimeDirectory + '\Kd values.csv'
         Kd_data=pd.read_csv(Kd_path,names=['exp_label','Kd'])
         Kd_val=Kd_data[Kd_data['exp_label']==self.exp_label_2.text()]
-        print(self.exp_label_2.text())
-        print(Kd_data)
-        return Kd_val
+        return Kd_val['Kd'][0]
     
     def setKdVal(self):
         Kd=self.getKdVal()
@@ -279,13 +279,18 @@ class Ui(QtWidgets.QMainWindow):
         # Variable values       
         combo_txt=self.MRRcomboBox.currentText()
         combo_lst=combo_txt.split(",") 
-        MRR_in_kHz=combo_lst
+        MRR_in_kHz=[]
+        for i in combo_lst:
+            MRR_in_kHz.append(np.repeat(float(i),n_times))
+        MRR_in_kHz=np.asarray(MRR_in_kHz).flatten()
+        np.random.shuffle(MRR_in_kHz) #shuffle for random order of deploying pulse energies
         # load power vs energy data
         TimeDirectory=self.getTimeDirectory()
         df=pd.read_csv(TimeDirectory + '\Mean power density in sample vs energy list.csv')
         cal_energy_list=df['energy_list']
-        cal_power_density=df['Power_density']
-        energy_list=f.getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter)
+        cal_power_density=df['Power_density']        
+        energy_list=f.getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter,n_times)       
+        
         return exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_list,n_times,interpulseinterval
 
     
@@ -358,28 +363,34 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         webbrowser.open(path)
         
     def getEnergyList(self):
-        energy_list=[]  # in microJoules
-        for i in range(int(self.steps)):
-            #delta_energy is in percent - multiply by 40 to get to microJoules
-            energy_list.append(np.repeat(self.delta_energy*(i)*40,self.n_times))       
-        energy_list=np.asarray(energy_list).flatten()
-        # for the cell experiments, we want to randomise the powers
-        if self.section=='cells*': #cell experiments = cells_KD or cells_opt
-            np.random.shuffle(energy_list)          
+        if self.section=='cells_opt':
+            energy_list=self.delta_energy
+        else:
+            energy_list=[]  # in microJoules
+            for i in range(int(self.steps)):
+                #delta_energy is in percent - multiply by 40 to get to microJoules
+                energy_list.append(np.repeat(self.delta_energy*(i)*40,self.n_times))       
+            energy_list=np.asarray(energy_list).flatten()
+            # for the cell experiments, we want to randomise the powers
+            if self.section=='cells_KD': #cell experiments = cells_KD or cells_opt
+                np.random.shuffle(energy_list)          
         return energy_list
    
 
     def StartLaser(self):
         self.coherent.startup() #start laser from standby - checks and Pulse Mode=1
         self.coherent.set_MRR(self.MRR_in_kHz,self.PW_in_fs,self.RRDivisor,self.PulsesPerMBurst) #set parameters
-        energy_list=self.getEnergyList()
+        if self.section=='cells_opt':
+            energy_list=self.delta_energy
+        else:
+            energy_list=self.getEnergyList()
         # the following increases the energy % sent with each loop with the 
         # option to repeat an energy level n_times
         for energy in energy_list:               
-            print(energy)
-            self.coherent.set_energy(energy)
+            print(energy/40) #converting microJoules to percent for RL command
+            self.coherent.set_energy(energy/40)
             self.coherent.start_lasing()
-            self.arduino.TTL_sequence(self.pulse_duration_ms, self.n_times, self.interpulseinterval)                                          
+            self.arduino.TTL_sequence(self.pulse_duration_ms, self.interpulseinterval)                                          
         self.coherent.stop_lasing()
         print('Completed lasing')
         self.close() # close window
@@ -391,6 +402,9 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         elif self.section=='cells_KD':
             DiffWindow=UploadPart1Results(self.DailyDirectory,self.TimeDirectory,energy_list,self.pulse_duration_ms,self.beam_diameter,self.exp_label)
             DiffWindow.exec_()
+        else:
+            Window=UploadPart2Results(self.DailyDirectory,self.TimeDirectory,energy_list,self.pulse_duration_ms,self.beam_diameter,self.exp_label,self.MRR_in_kHz)
+            Window.exec_()
         
     def skipToUpload(self):
         energy_list=self.getEnergyList()
@@ -401,6 +415,9 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         elif self.section=='cells_KD':
             DiffWindow=UploadPart1Results(self.DailyDirectory,self.TimeDirectory,energy_list,self.pulse_duration_ms,self.beam_diameter,self.exp_label)
             DiffWindow.exec_()
+        else:
+            Window=UploadPart2Results(self.DailyDirectory,self.TimeDirectory,energy_list,self.pulse_duration_ms,self.beam_diameter,self.exp_label,self.MRR_in_kHz)
+            Window.exec_()
         self.close()
         
 # After laser calibration run
@@ -515,7 +532,7 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         
     def Upload(self):
         results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
-        newPath=shutil.copy(results_fname,self.TimeDirectory + '\\' + 'cell_exp_1_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
+        newPath=shutil.copy(results_fname,self.TimeDirectory + '\cell_exp_1_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
         self.lineEditDir.setText(newPath)      
         self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
         icon = QtGui.QIcon()
@@ -557,12 +574,82 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         Kd_result=open(Kd_path,a_w)
         Kd_result.write(self.exp_label + ',' + str(Kd) + '\n')
         Kd_result.close()
-        #Once saved, close window and go to next tab
-        
+        #Once saved, close window and go to next tab       
         self.close()
  
+# After Cell experiments Part 2  run
+class UploadPart2Results(QDialog,UploadPart2Results_ui):
+    def __init__(self,DailyDirectory,TimeDirectory,energy_list,pulse_duration_ms,beam_diameter,exp_label,MRR_in_kHz):
+        QDialog.__init__(self)
+        UploadPart2Results_ui.__init__(self)
+        self.setupUi(self)
+    
+        self.DailyDirectory=DailyDirectory
+        self.TimeDirectory=TimeDirectory 
+        self.energy_list=energy_list 
+        self.pulse_duration_ms=pulse_duration_ms
+        self.beam_diameter=beam_diameter
+        self.exp_label=exp_label
+        self.MRR_in_kHz=MRR_in_kHz
         
- 
+        self.BrowseButtonPC.clicked.connect(self.Upload)
+        self.PushButtonChannels.clicked.connect(self.PlotChannels)
+        self.closeFigure.clicked.connect(lambda: self.closefigure(1))
+        
+        self.AnalyseButton.clicked.connect(self.Optimise)
+        
+        
+    def PlotChannels(self):
+        ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=f.loadEphysData(self.lineEditDir.text())
+        # plot the data
+        plt.figure(6,figsize=(20,15))
+        f.plot_data(picker.times,np.squeeze(picker),'Time (s)','Picker power meter\nmeasurement output (V)',\
+            'Picker power meter (measurement output) voltage vs time',None,311,show=False)
+        f.plot_data(Vm.times,np.squeeze(Vm),None,f'Membrane Voltage\n({Vm.units})','Membrane voltage vs time',[-50,-10],312,show=False)     
+        f.plot_data(Im.times,np.squeeze(Im),None,f'Membrane Current\n({Im.units})','Membrane current vs time',[-1,1],313,show=False)
+        plt.savefig(self.TimeDirectory + '\Figure 6- Plot of Ephys Channels (Part 1).png')
+        plt.show()   
+        
+    def Upload(self):
+        results_fname,_filter1=QFileDialog.getOpenFileName(self, 'Upload File')
+        newPath=shutil.copy(results_fname,self.TimeDirectory + '\cell_exp_2_results -' + datetime.datetime.now().strftime('%Hh%Mm%Ss') + '.smr')
+        self.lineEditDir.setText(newPath)      
+        self.AnalyseButton.setStyleSheet("font: 14pt \"Eras Bold ITC\"; color: rgb(0, 170, 0)")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.AnalyseButton.setIcon(icon)
+       
+    def Optimise(self):
+        ephysfile=self.lineEditDir.text() #ephys .smr file
+        min_current_vals=f.GetCurrent(ephysfile,self.pulse_duration_ms,self.energy_list,divisor=50,dead_time=2,test=True)
+        print(self.MRR_in_kHz)
+        print(self.energy_list)
+        print(min_current_vals)
+        #save data as csv
+        data={'MRR_in_kHz':self.MRR_in_kHz,'energy_list':self.energy_list,'min_current_vals':min_current_vals}
+        input_data=pd.DataFrame(data=data)
+        input_data.to_csv(self.TimeDirectory + '\Optimisation results: Minimum (averaged) Membrane Current vs energy and MRR.csv')
+
+        
+        fig=plt.figure(7,figsize=(15,10))
+        ax = Axes3D(fig)
+        ax.plot_trisurf(self.MRR_in_kHz,self.energy_list,min_current_vals,cmap='coolwarm',alpha=0.5)
+       
+        # ax.scatter(self.MRR_in_kHz,self.energy_list,min_current_vals,s=50,
+        #             linewidths=1, alpha=.7,
+        #             edgecolor='k',
+        #             c=min_current_vals) 
+        
+            # edgecolor='k',
+                    # c=min_current_vals)
+        ax.set_xlabel('Input Repetition rate (kHz)')        
+        ax.set_ylabel('RL energy (uJ)')
+        ax.set_zlabel('Minimum (averaged) Membrane Current (nA))')
+        ax.set_title('Optimisation: Minimum (averaged) Membrane Current versus Input Repetition rate and corresponding RL energy')
+        
+        plt.savefig(self.TimeDirectory + '\Figure 7- Optimisation: Membrane current vs MRR and RL energy.png')
+        plt.show()
+        
 #############################################################################
 if __name__ == "__main__":
     arduino=Arduino.Arduino('COM3',9600) #open the port

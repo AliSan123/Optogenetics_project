@@ -22,24 +22,21 @@ class Arduino:
         self._readline_() # Read the initial serial message response
         
         
-    def TTL_sequence(self,pulse_duration_ms,n_times,min_time_off):
+    def TTL_sequence(self,pulse_duration_ms,min_time_off):
         '''
         This function encodes the pulse sequence in the Arduino_sketch.ino.
-        In a single loop:
         TTL on for pulse_duration, confirm command completed, 
         then TTL off for arbitrary time, confirm off
         Variables:
         pulse_duration_ms = the delay timefor which TTL=HIGH
-        n_times = the number of loops of on-off sequences (multiple "shots" at once after cells recover)
         min_time_off = the minimum time in seconds for which the TTL=LOW before starting loop again. 
                         (minimum because there is error associated with the processing time)
         '''
 
-        for i in range(n_times):
-            self._write_(str(pulse_duration_ms)) # Send integer in milliseconds
-            self._readline_() # Read the serial message response
-            self._readline_() 
-            time.sleep(min_time_off) #this will have a relatively large error associatd with it
+        self._write_(str(pulse_duration_ms)) # Send integer in milliseconds
+        self._readline_() # Read the serial message response
+        self._readline_() 
+        time.sleep(min_time_off) #this will have a relatively large error associatd with it
             
     def _write_(self,command):
         '''

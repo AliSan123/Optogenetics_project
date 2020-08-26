@@ -247,7 +247,9 @@ def getPowerFromCalibration(cal_energy_list,cal_power_density,new_energy_list,be
     return new_Power_Density, new_Power
 
 def convertPowerToEnergy(cal_energy_list,cal_power_density,new_power_list,beam_diameter):
-    p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
+    # p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
+    p0=[35, 15,1,min(cal_power_density)] # this is an mandatory initial guess
+    
     popt,pcov=scipy.optimize.curve_fit(inverse_sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
     y=new_power_list/(np.pi*(beam_diameter/2)**2) #convert power mW to power density
     a=popt[0]
@@ -257,10 +259,21 @@ def convertPowerToEnergy(cal_energy_list,cal_power_density,new_power_list,beam_d
     new_energy_list=inverse_sigmoid(y,a ,b, c, x0)
     return new_energy_list
     
-def getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter):
-    power_list=np.sqrt(MRR_in_kHz*Kd) 
+def getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter,n_times):
+    MRR_in_kHz=np.array(MRR_in_kHz)
+    MRR_in_kHz_=MRR_in_kHz.astype(np.float)
+    power_list=np.sqrt(MRR_in_kHz_*Kd) 
     energy_list=convertPowerToEnergy(cal_energy_list,cal_power_density,power_list,beam_diameter)
     return energy_list
+
+# MRR_in_kHz=['100','200','400','500']
+# MRR_in_kHz=np.array(MRR_in_kHz)
+# MRR_in_kHz_=MRR_in_kHz.astype(np.float)
+# power_list=[]
+# for val in range(len(MRR_in_kHz)):
+#     power=(MRR_in_kHz_*2)**0.5
+#     power_list.append(power)
+
 
 if __name__=='__main__':  
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
