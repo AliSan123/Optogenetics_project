@@ -218,9 +218,13 @@ def GetCurrent(smrFile,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test
     min_current_vals=np.flip(min_current_vals)
     return min_current_vals
 
-def sigmoid(x, L ,a, b, c):
-    y = L / (1 + np.exp(-a*(x-b)))+c
+def sigmoid(x, a ,b, c, x0):
+    y = a + (b / (1 + np.exp(-c*(x-x0))))
     return y    
+
+def inverse_sigmoid(y,a ,b, c, x0):
+    x=x0+(1/c)*np.log((y-a)/(y-b-a))
+    return x
 
 def Michaelis_Menten_model(P,Imax,Kd):
     Ipeak=Imax*P/(P+Kd)
@@ -230,27 +234,33 @@ def getKd(power_data,current_data):
     popt,pcov=scipy.optimize.curve_fit(Michaelis_Menten_model,power_data,current_data)
     return popt[1]
 
-def getFromCalibration(cal_energy_list,cal_power_density):
+def getPowerFromCalibration(cal_energy_list,cal_power_density,new_energy_list,beam_diameter):
     p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
     popt,pcov=scipy.optimize.curve_fit(sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
     x=new_energy_list
-    L=popt[0]
-    a=popt[1]
-    b=popt[2]
-    c=popt[3]
-    new_Power_Density=sigmoid(x,L,a,b,c)
+    a=popt[0]
+    b=popt[1]
+    c=popt[2]
+    x0=popt[3]
+    new_Power_Density=sigmoid(x,a ,b, c, x0)
     new_Power=new_Power_Density*(np.pi*(beam_diameter/2)**2)
     return new_Power_Density, new_Power
 
-def getMRRfromEnergy(energy_power_calibration,Kd):
-    cal_energy_list=energy_power_calibration['cal_energy_list']
-    cal_power_density=energy_power_calibration['Power_density']
-    power_density,power=f.getFromCalibration(cal_energy_list,cal_power_density) #power in mW        
-    MRR_in_kHz=(power**2)/Kd
-    return power density, power, MRR_in_kHz
-
-def getPowerfromMRR(MRR_in_kHz,)):
-    power=sqrt(MRR_in_kHz*Kd)
+def convertPowerToEnergy(cal_energy_list,cal_power_density,new_power_list,beam_diameter):
+    p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
+    popt,pcov=scipy.optimize.curve_fit(inverse_sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
+    y=new_power_list/(np.pi*(beam_diameter/2)**2) #convert power mW to power density
+    a=popt[0]
+    b=popt[1]
+    c=popt[2]
+    x0=popt[3]
+    new_energy_list=inverse_sigmoid(y,a ,b, c, x0)
+    return new_energy_list
+    
+def getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter):
+    power_list=np.sqrt(MRR_in_kHz*Kd) 
+    energy_list=convertPowerToEnergy(cal_energy_list,cal_power_density,power_list,beam_diameter)
+    return energy_list
 
 if __name__=='__main__':  
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'

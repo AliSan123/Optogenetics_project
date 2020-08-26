@@ -1,5 +1,5 @@
-arduino.close_port()
-coherent.close_port()
+# arduino.close_port()
+# coherent.close_port()
 
 import os
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
@@ -65,9 +65,11 @@ class Ui(QtWidgets.QMainWindow):
         self.RunButton_3.clicked.connect(lambda: self.OpenSafetyWindow('cells_KD'))
 
 #       Cell Experiments Part 2 - Optimisation
+        self.UpdateKd.clicked.connect(self.setKdVal)        
         self.setCellParams2.clicked.connect(self.getCellParamVals2)
         self.setCellParams2.clicked.connect(lambda: self.RunButtonToGreen(button=self.RunButton_4))
         self.RunButton_4.clicked.connect(lambda: self.OpenSafetyWindow('cells_opt'))
+        
         
 #       HOME SCREEN  
     def OpenTermsOfUse(self):
@@ -175,6 +177,7 @@ class Ui(QtWidgets.QMainWindow):
         # the following are just set here so they can be passed into the next class, they are reset with variables if relevant
         picker_max_output=500
         picker_max_measurement=2
+        steps=0
         if section=='calibration':
             pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps,picker_max_output,picker_max_measurement=self.getParamVals()
             exp_label='cal'# not ued but need to set to pass into class
@@ -183,7 +186,7 @@ class Ui(QtWidgets.QMainWindow):
 
         else: #section ='cells_opt '
             print(section)
-            exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps=self.getCellParamVals()
+            exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval=self.getCellParamVals()
             
         TimeDirectory=self.getTimeDirectory()
         DailyDirectory=self.getDailyDirectory()
@@ -251,7 +254,15 @@ class Ui(QtWidgets.QMainWindow):
     def getKdVal(self):
         TimeDirectory=self.getTimeDirectory()
         Kd_path=TimeDirectory + '\Kd values.csv'
-        return Kd_path
+        Kd_data=pd.read_csv(Kd_path,names=['exp_label','Kd'])
+        Kd_val=Kd_data[Kd_data['exp_label']==self.exp_label_2.text()]
+        print(self.exp_label_2.text())
+        print(Kd_data)
+        return Kd_val
+    
+    def setKdVal(self):
+        Kd=self.getKdVal()
+        self.Kd_lineEdit.setText(str(Kd))
         
     def getCellParamVals2(self): 
         # Fixed values
@@ -264,27 +275,20 @@ class Ui(QtWidgets.QMainWindow):
         PulsesPerMBurst=self.lineEdit_6.text() 
         n_times=self.ntimes_2.value()
         #load Kd
-        Kd_path=self.getKdVal()
-        Kd_data=pd.read_csv(Kd_path,names=['exp_label','Kd'])
-        Kd=Kd_data[Kd_data['exp_label']==self.exp_label]
-        self.Kd_lineEdit.setText(str(Kd))
-        # Variable values
-        #initialise to pass into class but these will be recalculated using Kd
-        MRR_in_kHz=0
-        delta_energy=0
-        steps=0
-        if self.energy_radio_3.isChecked():
-            min_energy_as_frac=self.energy_spinbox_min_2.value()/100
-            max_energy_as_frac=self.energy_spinbox_max_2.value()/100
-            steps=self.energy_spinbox_steps_2.value() #how many energy values do you want to test?
-            delta_energy=(max_energy_as_frac-min_energy_as_frac)/steps #"delta" -change in energy with each ramp up
-        elif self.MRR_radio_3.isChecked():
-            combo_txt=self.MRRcomboBox.currentText()
-            combo_lst=combo_txt.split(",") 
-            MRR_in_kHz=combo_lst
-        return exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,delta_energy,n_times,interpulseinterval,steps
+        Kd=self.getKdVal()
+        # Variable values       
+        combo_txt=self.MRRcomboBox.currentText()
+        combo_lst=combo_txt.split(",") 
+        MRR_in_kHz=combo_lst
+        # load power vs energy data
+        TimeDirectory=self.getTimeDirectory()
+        df=pd.read_csv(TimeDirectory + '\Mean power density in sample vs energy list.csv')
+        cal_energy_list=df['energy_list']
+        cal_power_density=df['Power_density']
+        energy_list=f.getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diameter)
+        return exp_label,pulse_duration_ms,beam_diameter,MRR_in_kHz,PW_in_fs,RRDivisor,PulsesPerMBurst,energy_list,n_times,interpulseinterval
 
-
+    
 # Terms of use pop-up box
 class TermsOfUse(QDialog):
     def __init__(self):
@@ -458,7 +462,7 @@ class UploadCalResults(QDialog,UploadCalResults_ui):
         ephysfile=self.lineEditDir.text() #ephys .smr file
         mean_picker_volts=f.GetMeanVolts(ephysfile,self.pulse_duration_ms,self.energy_list,dead_time=2,test=True)
         plt.figure(2,figsize=(15,10))
-        f.plot_data(self.energy_list,mean_picker_volts,'Input RL energy (%)','Mean Picker volts (V))',\
+        f.plot_data(self.energy_list,mean_picker_volts,'Input RL energy (uJ)','Mean Picker volts (V))',\
                     'Calibration curve: Mean Picker Volts versus Input RL energy',None,111,show=False)
         plt.savefig(self.TimeDirectory + '\Figure 2- Plot of Mean Picker Volts versus Input RL energy.png')
         plt.show()
@@ -466,7 +470,7 @@ class UploadCalResults(QDialog,UploadCalResults_ui):
         plt.figure(3,figsize=(15,10))
         Power_density=f.convert_V_W(mean_picker_volts,self.picker_max_measurement_mW,self.picker_max_output_V,self.CalibrationFile,self.beam_diameter)
         
-        f.plot_data(self.energy_list,Power_density,'Input RL energy (%)','Mean Power Density in sample (mW/um2))',\
+        f.plot_data(self.energy_list,Power_density,'Input RL energy (uJ)','Mean Power Density in sample (mW/um2))',\
                     'Calibration curve: Mean Power Density in sample versus Input RL energy',None,111,show=False)
         plt.savefig(self.TimeDirectory + '\Figure 3- Plot of Mean Power Density in sample versus Input RL energy.png')
         plt.show()
@@ -524,7 +528,7 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         plt.figure(5,figsize=(15,10))
         plt.scatter(self.energy_list,min_current_vals)
         plt.ylabel('Minimum (averaged) Membrane Current (nA))')
-        plt.xlabel('Input RL energy (%)')
+        plt.xlabel('Input RL energy (uJ)')
         plt.title('Calibration curve: Minimum (averaged) Membrane Current versus Input RL energy')
         plt.savefig(self.TimeDirectory + '\Figure 5- Plot of Minimum (averaged) Membrane Current versus Input RL energy.png')
         plt.show()
