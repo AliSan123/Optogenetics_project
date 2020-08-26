@@ -217,7 +217,10 @@ def GetCurrent(smrFile,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test
         #plt.plot(mins)
     min_current_vals=np.flip(min_current_vals)
     return min_current_vals
-    
+
+def sigmoid(x, L ,a, b, c):
+    y = L / (1 + np.exp(-a*(x-b)))+c
+    return y    
 
 def Michaelis_Menten_model(P,Imax,Kd):
     Ipeak=Imax*P/(P+Kd)
@@ -227,26 +230,63 @@ def getKd(power_data,current_data):
     popt,pcov=scipy.optimize.curve_fit(Michaelis_Menten_model,power_data,current_data)
     return popt[1]
 
+def getFromCalibration(cal_energy_list,cal_power_density):
+    p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
+    popt,pcov=scipy.optimize.curve_fit(sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
+    x=new_energy_list
+    L=popt[0]
+    a=popt[1]
+    b=popt[2]
+    c=popt[3]
+    new_Power_Density=sigmoid(x,L,a,b,c)
+    new_Power=new_Power_Density*(np.pi*(beam_diameter/2)**2)
+    return new_Power_Density, new_Power
+
+def getMRRfromEnergy(energy_power_calibration,Kd):
+    cal_energy_list=energy_power_calibration['cal_energy_list']
+    cal_power_density=energy_power_calibration['Power_density']
+    power_density,power=f.getFromCalibration(cal_energy_list,cal_power_density) #power in mW        
+    MRR_in_kHz=(power**2)/Kd
+    return power density, power, MRR_in_kHz
+
+def getPowerfromMRR(MRR_in_kHz,)):
+    power=sqrt(MRR_in_kHz*Kd)
+
 if __name__=='__main__':  
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
-    # pulse_duration_ms=100# 0.1 seconds
-    # energy_list=np.linspace(0,1.5,39)
-    # mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
-    # #plt.plot(energy_list,mean_picker_volts)
-    # picker_max_output_V = 2
-    # picker_max_measurement_mW = 500
-    # beam_spot_diameter = 8 #in micro meters
-    # calibration_fname=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\power_calibration_980nm_8um_spot.dat'
-    # Power_density=convert_V_W(mean_picker_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_spot_diameter)
-    # #plt.plot(energy_list,Power_density)
-    # f=interp1d(energy_list,Power_density)
-    # xnew=np.arange(0,0.5,0.1)
-    # ynew=f(xnew)
-    # #plt.plot(energy_list,Power_density,'o',xnew,ynew,'-')
-    energy_list=np.linspace(0,39,30)
-    pulse_duration_ms=5
-    min_current_vals=GetCurrent(file,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test=True)
-    plt.plot(min_current_vals)
+    pulse_duration_ms=200# 0.1 seconds
+    energy_list1=np.linspace(0,1.4,39)
+    mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list1,dead_time=2,test=True)
+    #plt.plot(energy_list,mean_picker_volts)
+    picker_max_output_V = 2
+    picker_max_measurement_mW = 500
+    beam_spot_diameter = 8 #in micro meters
+    calibration_fname=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\power_calibration_980nm_8um_spot.dat'
+    Power_density=convert_V_W(mean_picker_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_spot_diameter)
+    #plt.plot(energy_list1,Power_density)
+    #interpolate
+    # f=interp1d(energy_list1,Power_density)
+    new_energy_list=np.linspace(0,0.4,30)
+    # new_Power_Density=f(new_energy_list)
+    # #Or use curve fit function
+    p0=[max(Power_density), np.median(energy_list1),1,min(Power_density)] # this is an mandatory initial guess
+    popt,pcov=scipy.optimize.curve_fit(sigmoid,energy_list1,Power_density,p0,method='dogbox')
+    x=new_energy_list
+    L=popt[0]
+    a=popt[1]
+    b=popt[2]
+    c=popt[3]
+    Power_Density_new=sigmoid(x,L,a,b,c)
+    plt.plot(new_energy_list,Power_Density_new,'-')
+    
+    #plt.plot(energy_list,Power_density,'o',x,new_Power_Density,'-')
+    
+    # pulse_duration_ms=5
+    # min_current_vals=GetCurrent(file,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test=True)
+    # #plt.plot(min_current_vals)
+    # beam_diameter=8
+    # current_density=min_current_vals/(np.pi*(beam_diameter/2)**2)
+    # Kd=getKd(new_Power_Density,current_density)
     # xnew=cell_energy_list
     # new_power_density=f(xnew) # these give the power densities of the new energy list
     # current_density=min_current_vals/(np.pi*(beam_diameter/2)**2)

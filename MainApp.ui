@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1373</width>
-    <height>877</height>
+    <height>868</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -68,7 +68,7 @@ font: 8pt &quot;Eras Medium ITC&quot;;
 </string>
       </property>
       <property name="currentIndex">
-       <number>3</number>
+       <number>4</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="icon">
@@ -3007,32 +3007,20 @@ p, li { white-space: pre-wrap; }
           <x>0</x>
           <y>0</y>
           <width>1341</width>
-          <height>821</height>
+          <height>801</height>
          </rect>
         </property>
-        <layout class="QGridLayout" name="gridLayout_26" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
-         <item row="4" column="0" rowspan="3">
-          <widget class="QTextBrowser" name="textBrowser_75">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
+        <layout class="QGridLayout" name="gridLayout_26" rowstretch="0,0,0,0,0,0,0,0,0,0,0,0,0,0,0">
+         <item row="1" column="0" rowspan="2" colspan="5">
+          <widget class="QTextBrowser" name="textBrowser_78">
            <property name="minimumSize">
             <size>
-             <width>450</width>
-             <height>150</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>500</width>
-             <height>16777215</height>
+             <width>0</width>
+             <height>180</height>
             </size>
            </property>
            <property name="styleSheet">
-            <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+            <string notr="true">background-color: rgb(0, 0, 127);</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -3042,319 +3030,85 @@ p, li { white-space: pre-wrap; }
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:12pt; text-decoration: underline; color:#00007f;&quot;&gt;FIXED PARAMETERS&lt;/span&gt;&lt;/p&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#00007f;&quot;&gt;Please insert the laser parameters which will remain the same for each pulse that is deployed.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;This protocol involves two parts. &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#ffffff;&quot;&gt;Part 1:&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; a CHO cell is photostimulated at a fixed repetition rate and at randomly varied powers. The induced current is measured using the voltage-clamp method and results are recorded by the electrophysiology data acquisition board. Photodamage should not occur. The Michaelis-Menten equation is then fitted to the cell to get the mean 𝐾&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝐷&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#ffffff;&quot;&gt;Part 2:&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; the same cell will be photostimulated at random powers and an associated repetition rate which satisfies 𝑓&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝑝&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;=𝑝&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;/𝐾&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝐷&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; . This is repeated for a number of cells.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="0" rowspan="10">
-          <layout class="QGridLayout" name="gridLayout_29">
-           <item row="0" column="0" colspan="2">
-            <widget class="QLabel" name="label_109">
-             <property name="text">
-              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;right&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; color:#00007f;&quot;&gt;Unique experiment label:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0" colspan="2">
-            <widget class="QLabel" name="label_110">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Pulse width 𝜏&lt;span style=&quot; vertical-align:sub;&quot;&gt;𝑝&lt;/span&gt;:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="2">
-            <widget class="QLineEdit" name="lineEdit_9">
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: rgb(201, 201, 201);</string>
-             </property>
-             <property name="text">
-              <string>1</string>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="3">
-            <widget class="QLabel" name="label_111">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0" colspan="2">
-            <widget class="QLabel" name="label_165">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Pulse duration ∆t:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="0" colspan="2">
-            <widget class="QLabel" name="label_166">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Beam spot diameter:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="3">
-            <widget class="QLabel" name="label_112">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>𝜇𝑚</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QDoubleSpinBox" name="pulse_duration_3">
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <double>100.000000000000000</double>
-             </property>
-             <property name="singleStep">
-              <double>1.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>5.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="2">
-            <widget class="QDoubleSpinBox" name="BeamDiamSpinBBox_5">
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="decimals">
-              <number>1</number>
-             </property>
-             <property name="maximum">
-              <double>20.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>8.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="3">
-            <widget class="QLabel" name="label_113">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;ms&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QLineEdit" name="exp_label_3">
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">color: rgb(145, 145, 145);</string>
-             </property>
-             <property name="text">
-              <string>cell_1</string>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="2">
-            <widget class="QSpinBox" name="n_times_spinbox_3">
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="value">
-              <number>1</number>
-             </property>
-            </widget>
-           </item>
-           <item row="6" column="1">
-            <widget class="QLabel" name="label_114">
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Samples (N):&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="2">
-            <widget class="QLineEdit" name="lineEdit_10">
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">background-color: rgb(201, 201, 201);</string>
-             </property>
-             <property name="text">
-              <string>1</string>
-             </property>
-             <property name="readOnly">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="2">
-            <widget class="QDoubleSpinBox" name="PWdoubleSpinBox_4">
-             <property name="minimumSize">
-              <size>
-               <width>70</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="minimum">
-              <double>0.010000000000000</double>
-             </property>
-             <property name="maximum">
-              <double>350.000000000000000</double>
-             </property>
-             <property name="value">
-              <double>280.000000000000000</double>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="1">
-            <widget class="QLabel" name="label_115">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;No. of pulses per microburst:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0" colspan="2">
-            <widget class="QLabel" name="label_116">
-             <property name="styleSheet">
-              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Repetition rate divisor:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="wordWrap">
-              <bool>true</bool>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item row="8" column="4" rowspan="3">
-          <widget class="QLabel" name="label_117">
+         <item row="12" column="4" alignment="Qt::AlignHCenter">
+          <widget class="QPushButton" name="setCellParams2">
            <property name="maximumSize">
             <size>
-             <width>250</width>
-             <height>200</height>
+             <width>300</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="cursor">
+            <cursorShape>PointingHandCursor</cursorShape>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font: 10pt &quot;Eras Bold ITC&quot;;
+selection-color: rgb(54, 54, 54);
+border-color: rgb(17, 53, 196);</string>
+           </property>
+           <property name="text">
+            <string>SET PARAMETERS</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="4" alignment="Qt::AlignRight">
+          <widget class="QLabel" name="label_177">
+           <property name="maximumSize">
+            <size>
+             <width>180</width>
+             <height>50</height>
             </size>
            </property>
            <property name="text">
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="../../icons.qrc">:/Icons/QTIcons/MRRCalibrationSampleOutput.PNG</pixmap>
+            <pixmap resource="../../icons.qrc">:/Icons/QTIcons/Py2Pulse Logo.PNG</pixmap>
            </property>
            <property name="scaledContents">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="3" column="0" colspan="5">
-          <spacer name="verticalSpacer_4">
+         <item row="0" column="0" colspan="3">
+          <widget class="QTextBrowser" name="textBrowser_77">
+           <property name="maximumSize">
+            <size>
+             <width>16777215</width>
+             <height>70</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="html">
+            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:20pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:18pt;&quot;&gt;    MAXIMISE THE CELL PHOTOCURRENT&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1" rowspan="11">
+          <widget class="Line" name="line_17">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>40</height>
-            </size>
+          </widget>
+         </item>
+         <item row="4" column="3" rowspan="11">
+          <widget class="Line" name="line_16">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
            </property>
-          </spacer>
+          </widget>
          </item>
          <item row="4" column="4" rowspan="4">
           <widget class="QTextBrowser" name="textBrowser_76">
@@ -3392,22 +3146,8 @@ p, li { white-space: pre-wrap; }
            </property>
           </widget>
          </item>
-         <item row="4" column="3" rowspan="13">
-          <widget class="Line" name="line_16">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1" rowspan="13">
-          <widget class="Line" name="line_17">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
-           </property>
-          </widget>
-         </item>
-         <item row="15" column="4" alignment="Qt::AlignHCenter">
-          <widget class="QCommandLinkButton" name="RunButton_5">
+         <item row="13" column="4" alignment="Qt::AlignHCenter">
+          <widget class="QCommandLinkButton" name="RunButton_4">
            <property name="cursor">
             <cursorShape>PointingHandCursor</cursorShape>
            </property>
@@ -3434,13 +3174,28 @@ color: rgb(189, 189, 189)</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="0" colspan="3">
-          <widget class="QTextBrowser" name="textBrowser_77">
+         <item row="4" column="0" rowspan="3">
+          <widget class="QTextBrowser" name="textBrowser_75">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>450</width>
+             <height>150</height>
+            </size>
+           </property>
            <property name="maximumSize">
             <size>
-             <width>16777215</width>
-             <height>70</height>
+             <width>500</width>
+             <height>16777215</height>
             </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
            </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
@@ -3450,74 +3205,42 @@ color: rgb(189, 189, 189)</string>
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:20pt;&quot;&gt; &lt;/span&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:18pt;&quot;&gt;    MAXIMISE THE CELL PHOTOCURRENT&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Eras Bold ITC'; font-size:12pt; text-decoration: underline; color:#00007f;&quot;&gt;FIXED PARAMETERS&lt;/span&gt;&lt;/p&gt;
+&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#00007f;&quot;&gt;Please insert the laser parameters which will remain the same for each pulse that is deployed.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>
-         <item row="0" column="4" alignment="Qt::AlignRight">
-          <widget class="QLabel" name="label_177">
+         <item row="8" column="4" rowspan="3">
+          <widget class="QLabel" name="label_117">
            <property name="maximumSize">
             <size>
-             <width>180</width>
-             <height>50</height>
+             <width>250</width>
+             <height>200</height>
             </size>
            </property>
            <property name="text">
             <string/>
            </property>
            <property name="pixmap">
-            <pixmap resource="../../icons.qrc">:/Icons/QTIcons/Py2Pulse Logo.PNG</pixmap>
+            <pixmap resource="../../icons.qrc">:/Icons/QTIcons/MRRCalibrationSampleOutput.PNG</pixmap>
            </property>
            <property name="scaledContents">
             <bool>true</bool>
            </property>
           </widget>
          </item>
-         <item row="14" column="4" alignment="Qt::AlignHCenter">
-          <widget class="QPushButton" name="setCellParams_3">
-           <property name="maximumSize">
+         <item row="3" column="0" colspan="5">
+          <spacer name="verticalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
             <size>
-             <width>300</width>
-             <height>16777215</height>
+             <width>20</width>
+             <height>40</height>
             </size>
            </property>
-           <property name="cursor">
-            <cursorShape>PointingHandCursor</cursorShape>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font: 10pt &quot;Eras Bold ITC&quot;;
-selection-color: rgb(54, 54, 54);
-border-color: rgb(17, 53, 196);</string>
-           </property>
-           <property name="text">
-            <string>SET PARAMETERS</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="0" rowspan="2" colspan="5">
-          <widget class="QTextBrowser" name="textBrowser_78">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>180</height>
-            </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: rgb(0, 0, 127);</string>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::NoFrame</enum>
-           </property>
-           <property name="html">
-            <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;This protocol involves two parts. &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#ffffff;&quot;&gt;Part 1:&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; a CHO cell is photostimulated at a fixed repetition rate and at randomly varied powers. The induced current is measured using the voltage-clamp method and results are recorded by the electrophysiology data acquisition board. Photodamage should not occur. The Michaelis-Menten equation is then fitted to the cell to get the mean 𝐾&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝐷&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;. &lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:10pt; font-weight:600; color:#ffffff;&quot;&gt;Part 2:&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; the same cell will be photostimulated at random powers and an associated repetition rate which satisfies 𝑓&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝑝&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;=𝑝&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;0&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:super;&quot;&gt;2&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt;/𝐾&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff; vertical-align:sub;&quot;&gt;𝐷&lt;/span&gt;&lt;span style=&quot; font-size:10pt; color:#ffffff;&quot;&gt; . This is repeated for a number of cells.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-          </widget>
+          </spacer>
          </item>
          <item row="4" column="2">
           <widget class="QTextBrowser" name="textBrowser_79">
@@ -3618,7 +3341,7 @@ background-color: rgba(0, 153, 255, 50);</string>
            </item>
           </layout>
          </item>
-         <item row="11" column="2" rowspan="5">
+         <item row="11" column="2" rowspan="3">
           <layout class="QGridLayout" name="gridLayout_28">
            <item row="0" column="0" colspan="3">
             <widget class="QLabel" name="MRR_heading_5">
@@ -3661,7 +3384,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QComboBox" name="MRRcomboBox_4">
+            <widget class="QComboBox" name="MRRcomboBox">
              <property name="minimumSize">
               <size>
                <width>200</width>
@@ -3736,7 +3459,7 @@ p, li { white-space: pre-wrap; }
          <item row="9" column="2" rowspan="2">
           <layout class="QGridLayout" name="gridLayout_31">
            <item row="1" column="1">
-            <widget class="QDoubleSpinBox" name="energy_spinbox_29">
+            <widget class="QDoubleSpinBox" name="energy_spinbox_min_2">
              <property name="maximumSize">
               <size>
                <width>70</width>
@@ -3748,19 +3471,6 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="3" column="1">
-            <widget class="QSpinBox" name="energy_spinbox_30">
-             <property name="maximumSize">
-              <size>
-               <width>70</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="value">
-              <number>1</number>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_131">
              <property name="text">
@@ -3768,18 +3478,8 @@ p, li { white-space: pre-wrap; }
              </property>
             </widget>
            </item>
-           <item row="3" column="0">
-            <widget class="QLabel" name="label_132">
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;This determines the number of repetitions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Samples at each energy value:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-            </widget>
-           </item>
            <item row="1" column="4">
-            <widget class="QDoubleSpinBox" name="energy_spinbox_32">
+            <widget class="QDoubleSpinBox" name="energy_spinbox_max_2">
              <property name="maximumSize">
               <size>
                <width>70</width>
@@ -3856,7 +3556,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="3" column="4">
-            <widget class="QSpinBox" name="energy_spinbox_31">
+            <widget class="QSpinBox" name="energy_spinbox_steps_2">
              <property name="maximumSize">
               <size>
                <width>70</width>
@@ -3876,6 +3576,370 @@ p, li { white-space: pre-wrap; }
            </item>
           </layout>
          </item>
+         <item row="7" column="0" rowspan="7">
+          <layout class="QGridLayout" name="gridLayout_6">
+           <item row="5" column="2">
+            <widget class="QLineEdit" name="lineEdit_5">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(201, 201, 201);</string>
+             </property>
+             <property name="text">
+              <string>1</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
+            <widget class="QLabel" name="label_43">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;fs&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="2">
+            <widget class="QLabel" name="label_158">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Pulse duration ∆t:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" colspan="2">
+            <widget class="QLabel" name="label_64">
+             <property name="text">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Eras Medium ITC'; font-size:8pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p align=&quot;right&quot; style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; color:#00007f;&quot;&gt;Unique experiment label (default is the same as Part 1):&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="0" colspan="2">
+            <widget class="QLabel" name="label_42">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Pulse width 𝜏&lt;span style=&quot; vertical-align:sub;&quot;&gt;𝑝&lt;/span&gt;:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="2">
+            <widget class="QSpinBox" name="ntimes_2">
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="value">
+              <number>1</number>
+             </property>
+            </widget>
+           </item>
+           <item row="7" column="1">
+            <widget class="QLabel" name="label_132">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;This determines the number of repetitions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Samples at each value:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="2">
+            <widget class="QLabel" name="label_156">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Beam spot diameter:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="2">
+            <widget class="QDoubleSpinBox" name="pulse_duration_2">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <double>100.000000000000000</double>
+             </property>
+             <property name="singleStep">
+              <double>1.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>5.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="3">
+            <widget class="QLabel" name="label_44">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>𝜇𝑚</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="2">
+            <widget class="QDoubleSpinBox" name="BeamDiamSpinBBox_4">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="maximum">
+              <double>20.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>8.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QLineEdit" name="lineEdit_6">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(201, 201, 201);</string>
+             </property>
+             <property name="text">
+              <string>1</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="1">
+            <widget class="QLabel" name="label_46">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;No. of pulses per microburst:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QDoubleSpinBox" name="PWdoubleSpinBox_3">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="minimum">
+              <double>0.010000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>350.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>280.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QLineEdit" name="exp_label_2">
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">color: rgb(145, 145, 145);
+background-color: rgb(189, 189, 189);</string>
+             </property>
+             <property name="text">
+              <string>cell_1</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
+            <widget class="QLabel" name="label_45">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;ms&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="2">
+            <widget class="QDoubleSpinBox" name="IPISpinBBox_3">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="decimals">
+              <number>1</number>
+             </property>
+             <property name="minimum">
+              <double>0.000000000000000</double>
+             </property>
+             <property name="maximum">
+              <double>60.000000000000000</double>
+             </property>
+             <property name="value">
+              <double>1.000000000000000</double>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="3">
+            <widget class="QLabel" name="label_52">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:10pt;&quot;&gt;s&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLabel" name="label_159">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;&lt;span style=&quot; color:#00007f;&quot;&gt;Approx. Inter-pulse interval (IPI):&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="5" column="0" colspan="2">
+            <widget class="QLabel" name="label_49">
+             <property name="styleSheet">
+              <string notr="true">background-color: rgba(255, 255, 255, 0);</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;Repetition rate divisor:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="1">
+            <widget class="QLabel" name="label_133">
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:7pt;&quot;&gt;This determines the number of repetitions&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;right&quot;&gt;K&lt;span style=&quot; vertical-align:sub;&quot;&gt;D&lt;/span&gt; value:&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item row="8" column="2">
+            <widget class="QLineEdit" name="Kd_lineEdit">
+             <property name="minimumSize">
+              <size>
+               <width>70</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>70</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="styleSheet">
+              <string notr="true">background-color: rgb(201, 201, 201);</string>
+             </property>
+             <property name="text">
+              <string>1</string>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
         </layout>
        </widget>
       </widget>
@@ -3887,7 +3951,7 @@ p, li { white-space: pre-wrap; }
  </widget>
  <resources>
   <include location="../../icons.qrc"/>
-  <include location="../../../../../icons.qrc"/>
+  <include location="../../icons.qrc"/>
  </resources>
  <connections/>
 </ui>
