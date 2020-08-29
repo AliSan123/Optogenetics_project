@@ -264,7 +264,7 @@ class Ui(QtWidgets.QMainWindow):
         Kd=self.getKdVal()
         self.Kd_lineEdit.setText(str(Kd))
         
-    def getCellParamVals2(self): 
+    def getCellParamVals2(self, test=True): 
         # Fixed values
         exp_label=self.exp_label_2.text()
         pulse_duration_ms=self.pulse_duration_2.value()
@@ -283,7 +283,8 @@ class Ui(QtWidgets.QMainWindow):
         for i in combo_lst:
             MRR_in_kHz.append(np.repeat(float(i),n_times))
         MRR_in_kHz=np.asarray(MRR_in_kHz).flatten()
-        np.random.shuffle(MRR_in_kHz) #shuffle for random order of deploying pulse energies
+        if test==False:
+            np.random.shuffle(MRR_in_kHz) #shuffle for random order of deploying pulse energies
         # load power vs energy data
         TimeDirectory=self.getTimeDirectory()
         df=pd.read_csv(TimeDirectory + '\Mean power density in sample vs energy list.csv')
@@ -358,11 +359,11 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
             icon.addPixmap(QtGui.QPixmap(":/Icons/QTIcons/RunArrow.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
             self.SWRunButton.setIcon(icon)
     
-    def OpenLaserManual(self):
+    def OpenLaserManual(self,test=True):
         path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
         webbrowser.open(path)
         
-    def getEnergyList(self):
+    def getEnergyList(self,test=True):
         if self.section=='cells_opt':
             energy_list=self.delta_energy
         else:
@@ -373,7 +374,8 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
             energy_list=np.asarray(energy_list).flatten()
             # for the cell experiments, we want to randomise the powers
             if self.section=='cells_KD': #cell experiments = cells_KD or cells_opt
-                np.random.shuffle(energy_list)          
+                if test==False:
+                    np.random.shuffle(energy_list)          
         return energy_list
    
 
