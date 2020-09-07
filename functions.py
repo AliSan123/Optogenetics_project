@@ -3,10 +3,11 @@ import neo #https://neo.readthedocs.io/en/stable/
 import numpy as np
 from scipy.interpolate import interp1d
 import scipy
-import pandas
+import pandas as pd
+from mpl_toolkits.mplot3d import axes3d, Axes3D 
 
 def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,fontsize=18,show=True):
-    plt.subplot(subplot,fontsize=fontsize)
+    plt.subplot(subplot)
     plt.plot(X,Y)
     plt.ylabel(Ylabel,fontsize=fontsize)
     plt.xlabel(Xlabel,fontsize=fontsize)
@@ -143,7 +144,7 @@ def GetMeanVolts(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
     
 def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_diameter):    
     #power (mW) directly proportional to voltage (V); y=mx
-    m=picker_max_measurement_mW/(picker_max_output_V/1000) #Y/X - units are mW/mV
+    m=picker_max_measurement_mW/(picker_max_output_V*1000) #Y/X - units are mW/mV
     picker_power=mean_pulse_volts*m #units are mW = mV* (mW/mV)
     #Calibration curve power onto cell versus picker power y=mx+c
     calibration_file = np.loadtxt(calibration_fname)
@@ -276,48 +277,41 @@ def getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diam
 
 
 if __name__=='__main__':  
+#Power calibration
     file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
-    pulse_duration_ms=200# 0.1 seconds
-    energy_list1=np.linspace(0,1.4,39)
-    mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list1,dead_time=2,test=True)
-    #plt.plot(energy_list,mean_picker_volts)
-    picker_max_output_V = 2
-    picker_max_measurement_mW = 500
-    beam_spot_diameter = 8 #in micro meters
+    pulse_duration_ms=200# 0.2 seconds
+    energy_list=np.linspace(0,1.4,39) # iniitialise a list of energies for testing
+    mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
     calibration_fname=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\power_calibration_980nm_8um_spot.dat'
-    Power_density=convert_V_W(mean_picker_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_spot_diameter)
-    #plt.plot(energy_list1,Power_density)
-    #interpolate
-    # f=interp1d(energy_list1,Power_density)
-    new_energy_list=np.linspace(0,0.4,30)
-    # new_Power_Density=f(new_energy_list)
-    # #Or use curve fit function
-    p0=[max(Power_density), np.median(energy_list1),1,min(Power_density)] # this is an mandatory initial guess
-    popt,pcov=scipy.optimize.curve_fit(sigmoid,energy_list1,Power_density,p0,method='dogbox')
-    x=new_energy_list
-    L=popt[0]
-    a=popt[1]
-    b=popt[2]
-    c=popt[3]
-    Power_Density_new=sigmoid(x,L,a,b,c)
-    plt.plot(new_energy_list,Power_Density_new,'-')
-    
-    #plt.plot(energy_list,Power_density,'o',x,new_Power_Density,'-')
-    
-    # pulse_duration_ms=5
-    # min_current_vals=GetCurrent(file,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test=True)
-    # #plt.plot(min_current_vals)
-    # beam_diameter=8
-    # current_density=min_current_vals/(np.pi*(beam_diameter/2)**2)
-    # Kd=getKd(new_Power_Density,current_density)
-    # xnew=cell_energy_list
-    # new_power_density=f(xnew) # these give the power densities of the new energy list
-    # current_density=min_current_vals/(np.pi*(beam_diameter/2)**2)
-    # plt.plot(new_power_density,current_density) #this is what you use to extract kd
-
-    
-    # Imax=max(current_density)
-    # I_half_max=Imax/2
-    # f2=interp1d(new_power_density,current_density,axis=0)#interpolate x-axis
-    # ynew=I_half_max
-    # xnew=f2(ynew))
+    Power_density=convert_V_W(mean_picker_volts,500,2,calibration_fname,8) #The constants are set in the GUI
+    plt.figure(1)
+    plot_data(energy_list,Power_density,'Input RL energy (uJ)','Mean Power Density in sample (mW/um2)',\
+                    'Calibration curve: Mean Power Density in sample versus Input RL energy',None,111,show=True)
+# Cell experiments - Kd    
+    energy_list=np.linspace(0.5,1.4,30) # iniitialise a new list of energies for testing
+    pulse_duration_ms2=5
+    min_current_vals=GetCurrent(file,pulse_duration_ms2,energy_list,divisor=50,dead_time=2,test=True)
+    current_density=min_current_vals/(np.pi*(8/2)**2) # beam diameter is 8 microns
+    cal_file=r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project\Experiments\2020-09-01\2020-09-01_14h35m58\Mean power density in sample vs energy list.csv'
+    cal_results=pd.read_csv(cal_file)
+    cal_energy_list=cal_results['energy_list']
+    cal_power_density=cal_results['Power_density'] 
+    new_Power_Density, new_Power = getPowerFromCalibration(cal_energy_list,cal_power_density,energy_list,8)
+    plt.figure(2)
+    plot_data(new_Power_Density,min_current_vals,'Mean power density in sample (mW/um2)','Minimum (smoothed) photocurrent (nA)',\
+                'Minimum photocurrent versus Mean Power Density in sample',None,111,show=True)
+    Kd=getKd(new_Power_Density,current_density)
+    print(Kd)
+# Cell experiments - Optimisations
+    MRR_in_kHz=[200,400,600,800,1000,1200]
+    energy_list2=getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,8,1) 
+    min_current_vals=GetCurrent(file,pulse_duration_ms2,energy_list2,divisor=50,dead_time=2,test=True)
+    fig=plt.figure(3)
+    ax = Axes3D(fig)
+    ax.plot_trisurf(MRR_in_kHz,energy_list2,min_current_vals,cmap='coolwarm',alpha=0.5)
+    ax.set_xlabel('Input Repetition rate (kHz)')        
+    ax.set_ylabel('RL energy (uJ)')
+    ax.set_zlabel('Minimum (averaged) Membrane Current (nA))')
+    ax.set_title('Optimisation: Minimum (averaged) Membrane Current versus Input Repetition rate and corresponding RL energy')
+    plt.show()
+          

@@ -553,13 +553,17 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         plt.show()
         
         cal_results=pd.read_csv(self.TimeDirectory + '\Mean power density in sample vs energy list.csv')
-        x_data=cal_results['energy_list']
-        y_data=cal_results['Power_density']
-        #interpolation function which will be used to get the power at a given energy value
-        interpld=interp1d(x_data,y_data) 
-        new_Power_Density=interpld(self.energy_list)#This gives interpolated power vals for experimental energy values 
+        # x_data=cal_results['energy_list']
+        # y_data=cal_results['Power_density']
+        # # #interpolation function which will be used to get the power at a given energy value
+        # interpld=interp1d(x_data,y_data) 
+        # new_Power_Density=interpld(self.energy_list)#This gives interpolated power vals for experimental energy values 
         current_density=min_current_vals/(np.pi*(self.beam_diameter/2)**2)
+        cal_energy_list=cal_results['energy_list']
+        cal_power_density=cal_results['Power_density']    
+        new_Power_Density, new_Power = f.getPowerFromCalibration(cal_energy_list,cal_power_density,self.energy_list,self.beam_diameter)
         
+        print(new_Power_Density)
         data={'energy_list':self.energy_list,'power_density':new_Power_Density,'current_density':current_density, 'min_current_vals':min_current_vals}
         results=pd.DataFrame(data=data)
         results.to_csv(self.TimeDirectory + '\Minimum (averaged) Membrane Current vs Mean Power Density in sample.csv')
