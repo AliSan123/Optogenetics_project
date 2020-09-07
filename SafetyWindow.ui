@@ -44,20 +44,6 @@ color: rgb(255, 255, 255);</string>
       </property>
      </widget>
     </item>
-    <item row="12" column="0">
-     <widget class="QCheckBox" name="checkBoxKeyswitch">
-      <property name="text">
-       <string>I confirm the keyswitch is in the &quot;ON&quot; position and the chiller temperature is locked and stable (Laser Manual 4-3).</string>
-      </property>
-     </widget>
-    </item>
-    <item row="11" column="0">
-     <widget class="QCheckBox" name="checkBoxKeyswitch_2">
-      <property name="text">
-       <string>I confirm I have switched on the electrophysiology data acquisition.</string>
-      </property>
-     </widget>
-    </item>
     <item row="9" column="0" colspan="2">
      <widget class="QCheckBox" name="checkBoxIsSafe">
       <property name="text">
@@ -225,6 +211,20 @@ border: 0px</string>
       <property name="icon">
        <iconset resource="../../icons.qrc">
         <normaloff>:/Icons/QTIcons/InfoDark.png</normaloff>:/Icons/QTIcons/InfoDark.png</iconset>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="0" colspan="2">
+     <widget class="QCheckBox" name="checkBoxKeyswitch">
+      <property name="text">
+       <string>I confirm the keyswitch is in the &quot;ON&quot; position and the chiller temperature is locked and stable (Laser Manual 4-3).</string>
+      </property>
+     </widget>
+    </item>
+    <item row="11" column="0" colspan="2">
+     <widget class="QCheckBox" name="checkBoxKeyswitch_2">
+      <property name="text">
+       <string>I confirm I have switched on the electrophysiology data acquisition.</string>
       </property>
      </widget>
     </item>

@@ -92,7 +92,7 @@ color: rgb(255, 255, 255);</string>
        <string notr="true">background-color: rgb(0, 153, 255,50);</string>
       </property>
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-family:'Calibri'; font-size:18pt; font-weight:600; color:#1135c4;&quot;&gt;UPLOAD RESULTS&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-family:'Calibri'; font-size:16pt; color:#1135c4;&quot;&gt;To complete the laser calibration, the electrophysiological data must be analysed. Please upload the the data captured by the electrophysiological data acquisiation board (.smr).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-family:'Calibri'; font-size:18pt; font-weight:600; color:#1135c4;&quot;&gt;UPLOAD RESULTS&lt;/span&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;&lt;span style=&quot; font-family:'Calibri'; font-size:16pt; color:#1135c4;&quot;&gt;To complete the optimisation, the electrophysiological data must be analysed. Please upload the the data captured by the electrophysiological data acquisiation board (.smr).&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>

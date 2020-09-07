@@ -1,5 +1,5 @@
-arduino.close_port()
-coherent.close_port()
+# arduino.close_port()
+# coherent.close_port()
 
 import os
 os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
@@ -310,7 +310,7 @@ class TermsOfUse(QDialog):
         webbrowser.open(path)
     
     def OpenLaserManual(self):
-        path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
+        path=r'https://github.com/AliSan123/Optogenetics_project/blob/master/Laser%20Manual%20Coherent%20Monaco%202017.pdf'
         webbrowser.open(path)
     
     def OpenReport(self):
@@ -389,8 +389,8 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
         # the following increases the energy % sent with each loop with the 
         # option to repeat an energy level n_times
         for energy in energy_list:               
-            print(energy/40) #converting microJoules to percent for RL command
-            self.coherent.set_energy(energy/40)
+            print((energy/40)*100) #converting microJoules to percent for RL command
+            self.coherent.set_energy((energy/40)*100)
             self.coherent.start_lasing()
             self.arduino.TTL_sequence(self.pulse_duration_ms, self.interpulseinterval)                                          
         self.coherent.stop_lasing()
@@ -516,7 +516,7 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         
         self.BrowseButtonPC.clicked.connect(self.Upload)
         self.PushButtonChannels.clicked.connect(self.PlotChannels)
-        self.closeFigure.clicked.connect(lambda: self.closefigure(1))
+        self.closeFigure.clicked.connect(lambda: self.closefigure(4))
         
         self.AnalyseButton.clicked.connect(self.FindKd)
         
@@ -557,13 +557,19 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         y_data=cal_results['Power_density']
         #interpolation function which will be used to get the power at a given energy value
         interpld=interp1d(x_data,y_data) 
-        new_Power_Density=interpld(self.energy_list)#This give sinterpolated power vals for experimental energy values 
+        new_Power_Density=interpld(self.energy_list)#This gives interpolated power vals for experimental energy values 
         current_density=min_current_vals/(np.pi*(self.beam_diameter/2)**2)
         
         data={'energy_list':self.energy_list,'power_density':new_Power_Density,'current_density':current_density, 'min_current_vals':min_current_vals}
         results=pd.DataFrame(data=data)
         results.to_csv(self.TimeDirectory + '\Minimum (averaged) Membrane Current vs Mean Power Density in sample.csv')
-        
+        plt.figure(6,figsize=(15,10))
+        plt.scatter(new_Power_Density,min_current_vals)
+        plt.ylabel('Minimum (averaged) Membrane Current (nA))')
+        plt.xlabel(r'Power Density in sample ($mW/\mu m^2$)')
+        plt.title('Michaelis Menten: Minimum (averaged) Membrane Current versus Power Density in sample')
+        plt.savefig(self.TimeDirectory + '\Figure 6- Michaelis Menten plot.png')
+        plt.show()        
         #Find Kd by fitting the Michaelis Menten equation
         Kd=f.getKd(new_Power_Density,current_density)
         print('Kd='+str(Kd))
@@ -578,7 +584,10 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         Kd_result.close()
         #Once saved, close window and go to next tab       
         self.close()
- 
+        
+    def closefigure(self,figure):
+        plt.close(fig=figure)
+        
 # After Cell experiments Part 2  run
 class UploadPart2Results(QDialog,UploadPart2Results_ui):
     def __init__(self,DailyDirectory,TimeDirectory,energy_list,pulse_duration_ms,beam_diameter,exp_label,MRR_in_kHz):
@@ -596,20 +605,22 @@ class UploadPart2Results(QDialog,UploadPart2Results_ui):
         
         self.BrowseButtonPC.clicked.connect(self.Upload)
         self.PushButtonChannels.clicked.connect(self.PlotChannels)
-        self.closeFigure.clicked.connect(lambda: self.closefigure(1))
+        self.closeFigure.clicked.connect(lambda: self.closefigure(7))
         
         self.AnalyseButton.clicked.connect(self.Optimise)
+        
+        self.close()
         
         
     def PlotChannels(self):
         ephys,picker,Vm,Im,picker_units,Vm_units,Im_units,Vm_Hz, Im_Hz, picker_Hz=f.loadEphysData(self.lineEditDir.text())
         # plot the data
-        plt.figure(6,figsize=(20,15))
+        plt.figure(7,figsize=(20,15))
         f.plot_data(picker.times,np.squeeze(picker),'Time (s)','Picker power meter\nmeasurement output (V)',\
             'Picker power meter (measurement output) voltage vs time',None,311,show=False)
         f.plot_data(Vm.times,np.squeeze(Vm),None,f'Membrane Voltage\n({Vm.units})','Membrane voltage vs time',[-50,-10],312,show=False)     
         f.plot_data(Im.times,np.squeeze(Im),None,f'Membrane Current\n({Im.units})','Membrane current vs time',[-1,1],313,show=False)
-        plt.savefig(self.TimeDirectory + '\Figure 6- Plot of Ephys Channels (Part 1).png')
+        plt.savefig(self.TimeDirectory + '\Figure 7- Plot of Ephys Channels (Part 1).png')
         plt.show()   
         
     def Upload(self):
@@ -630,10 +641,9 @@ class UploadPart2Results(QDialog,UploadPart2Results_ui):
         #save data as csv
         data={'MRR_in_kHz':self.MRR_in_kHz,'energy_list':self.energy_list,'min_current_vals':min_current_vals}
         input_data=pd.DataFrame(data=data)
-        input_data.to_csv(self.TimeDirectory + '\Optimisation results: Minimum (averaged) Membrane Current vs energy and MRR.csv')
-
+        input_data.to_csv(self.TimeDirectory + r'\Optimisation results: Minimum (averaged) Membrane Current vs energy and MRR.csv')
         
-        fig=plt.figure(7,figsize=(15,10))
+        fig=plt.figure(8,figsize=(15,10))
         ax = Axes3D(fig)
         ax.plot_trisurf(self.MRR_in_kHz,self.energy_list,min_current_vals,cmap='coolwarm',alpha=0.5)
        
@@ -649,9 +659,11 @@ class UploadPart2Results(QDialog,UploadPart2Results_ui):
         ax.set_zlabel('Minimum (averaged) Membrane Current (nA))')
         ax.set_title('Optimisation: Minimum (averaged) Membrane Current versus Input Repetition rate and corresponding RL energy')
         
-        plt.savefig(self.TimeDirectory + '\Figure 7- Optimisation: Membrane current vs MRR and RL energy.png')
+        plt.savefig(self.TimeDirectory + '\Figure 8- Optimisation: Membrane current vs MRR and RL energy.svg')
         plt.show()
         
+        def closefigure(self,figure):
+            plt.close(fig=figure)
 #############################################################################
 if __name__ == "__main__":
     arduino=Arduino.Arduino('COM3',9600) #open the port

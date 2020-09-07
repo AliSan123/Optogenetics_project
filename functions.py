@@ -5,13 +5,13 @@ from scipy.interpolate import interp1d
 import scipy
 import pandas
 
-def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,show=True):
-    plt.subplot(subplot)
+def plot_data(X,Y,Xlabel,Ylabel,title,ylim,subplot,fontsize=18,show=True):
+    plt.subplot(subplot,fontsize=fontsize)
     plt.plot(X,Y)
-    plt.ylabel(Ylabel)
-    plt.xlabel(Xlabel)
+    plt.ylabel(Ylabel,fontsize=fontsize)
+    plt.xlabel(Xlabel,fontsize=fontsize)
     plt.ylim(ylim)
-    plt.title(title)
+    plt.title(title,fontsize=fontsize)
     if show==True:
         plt.show()
 
@@ -143,8 +143,8 @@ def GetMeanVolts(smrFile,pulse_duration_ms,energy_list,dead_time=2,test=False):
     
 def convert_V_W(mean_pulse_volts,picker_max_measurement_mW,picker_max_output_V,calibration_fname,beam_diameter):    
     #power (mW) directly proportional to voltage (V); y=mx
-    m=picker_max_measurement_mW/picker_max_output_V #Y/X
-    picker_power=mean_pulse_volts*m
+    m=picker_max_measurement_mW/(picker_max_output_V/1000) #Y/X - units are mW/mV
+    picker_power=mean_pulse_volts*m #units are mW = mV* (mW/mV)
     #Calibration curve power onto cell versus picker power y=mx+c
     calibration_file = np.loadtxt(calibration_fname)
     power_onto_cell_mW=calibration_file[1,:]
@@ -195,7 +195,7 @@ def GetCurrent(smrFile,pulse_duration_ms,energy_list,divisor=50,dead_time=2,test
     mean=np.mean(Im_dead[0:dead_samples])
     std_dev=np.std(Im_dead[0:dead_samples])
     # first smooth the data 
-    duration=int(np.ceil(Im_Hz*(pulse_duration_ms*0.001))) #index of end - make it 1.5 times longer to ensure we capture the maximum
+    duration=int(np.ceil(Im_Hz*(pulse_duration_ms*0.001))) #index of end 
     smoothed_Im=smooth(Im_.flatten(),int(np.floor(duration/4)))
     #use smoothed curve for thresholding
     tol=mean-2*std_dev

@@ -61,16 +61,16 @@ class Coherent:
                 
     def set_MRR(self,MRR_in_kHz,PW_in_fs,RRDivisor=1,PulsesPerMBurst=1):
         """
-        This function sets the command repetition rate. This will be called upon and varied often during experiment.
-        
+        This function sets the command repetition rate. This will be called upon 
+        varied often during experiment.
         """        
         self._write_(f'SET={MRR_in_kHz},{PW_in_fs},{RRDivisor},{PulsesPerMBurst}') # Declare initial parameters (p6-14)
         
         
     def set_energy(self, energy_in_percent):
         """
-        This function sets the command energy level (0-100% of 40J). This will be called upon and varied often during experiment.
-        
+        This function sets the command energy level (0-100% of 40J). This will be 
+        called upon and varied often during experiment.
         """         
         self._write_(f'RL={energy_in_percent}')
                 
