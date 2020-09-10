@@ -1,9 +1,6 @@
 # arduino.close_port()
 # coherent.close_port()
 
-import os
-os.chdir(r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project')
-
 from PyQt5 import QtWidgets, uic, QtGui
 from PyQt5.QtWidgets import QDialog, QFileDialog
 from icons_rc import *
@@ -19,9 +16,6 @@ import pandas as pd
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d, Axes3D 
-import pyqtgraph as pg
-import pyqtgraph.exporters
-
 
 SafetyWindow_ui,_=uic.loadUiType('SafetyWindow.ui')
 UploadCalResults_ui,_=uic.loadUiType('UploadCalResults.ui')
@@ -360,7 +354,7 @@ class SafetyWindow(QDialog,SafetyWindow_ui):
             self.SWRunButton.setIcon(icon)
     
     def OpenLaserManual(self,test=True):
-        path=r'https://edge.coherent.com/assets/pdf/COHR_Monaco1035_DS_0120_1.pdf'
+        path=r'https://github.com/AliSan123/Optogenetics_project/blob/master/Laser%20Manual%20Coherent%20Monaco%202017.pdf'
         webbrowser.open(path)
         
     def getEnergyList(self,test=True):
@@ -500,6 +494,9 @@ class UploadCalResults(QDialog,UploadCalResults_ui):
         #Once saved, close window and go to next tab
         self.close()
         
+    def closefigure(self,figure):
+        plt.close(fig=figure)        
+
 # After Cell experiments Part 1  run
 class UploadPart1Results(QDialog,UploadPart1Results_ui):
     def __init__(self,DailyDirectory,TimeDirectory,energy_list,pulse_duration_ms,beam_diameter,exp_label):
@@ -553,15 +550,19 @@ class UploadPart1Results(QDialog,UploadPart1Results_ui):
         plt.show()
         
         cal_results=pd.read_csv(self.TimeDirectory + '\Mean power density in sample vs energy list.csv')
+        current_density=min_current_vals/(np.pi*(self.beam_diameter/2)**2)
+               
+        ## Method 1 (preferred if converges): uses the scipy.optimize.curve_fit method to interpolate values
+        cal_energy_list=cal_results['energy_list']
+        cal_power_density=cal_results['Power_density']    
+        new_Power_Density, new_Power = f.getPowerFromCalibration(cal_energy_list,cal_power_density,self.energy_list,self.beam_diameter)
+        
+        ## Method 2: If the model doesn't converge, this is an approximation
         # x_data=cal_results['energy_list']
         # y_data=cal_results['Power_density']
         # # #interpolation function which will be used to get the power at a given energy value
         # interpld=interp1d(x_data,y_data) 
         # new_Power_Density=interpld(self.energy_list)#This gives interpolated power vals for experimental energy values 
-        current_density=min_current_vals/(np.pi*(self.beam_diameter/2)**2)
-        cal_energy_list=cal_results['energy_list']
-        cal_power_density=cal_results['Power_density']    
-        new_Power_Density, new_Power = f.getPowerFromCalibration(cal_energy_list,cal_power_density,self.energy_list,self.beam_diameter)
         
         print(new_Power_Density)
         data={'energy_list':self.energy_list,'power_density':new_Power_Density,'current_density':current_density, 'min_current_vals':min_current_vals}
@@ -645,12 +646,12 @@ class UploadPart2Results(QDialog,UploadPart2Results_ui):
         #save data as csv
         data={'MRR_in_kHz':self.MRR_in_kHz,'energy_list':self.energy_list,'min_current_vals':min_current_vals}
         input_data=pd.DataFrame(data=data)
-        input_data.to_csv(self.TimeDirectory + r'\Optimisation results: Minimum (averaged) Membrane Current vs energy and MRR.csv')
+        input_data.to_csv(self.TimeDirectory + '\Optimisation results- Minimum averaged Membrane Current vs energy and MRR.csv')
         
         fig=plt.figure(8,figsize=(15,10))
         ax = Axes3D(fig)
         ax.plot_trisurf(self.MRR_in_kHz,self.energy_list,min_current_vals,cmap='coolwarm',alpha=0.5)
-       
+        # As another option, here's a 3D scatter
         # ax.scatter(self.MRR_in_kHz,self.energy_list,min_current_vals,s=50,
         #             linewidths=1, alpha=.7,
         #             edgecolor='k',
@@ -666,8 +667,9 @@ class UploadPart2Results(QDialog,UploadPart2Results_ui):
         plt.savefig(self.TimeDirectory + '\Figure 8- Optimisation: Membrane current vs MRR and RL energy.svg')
         plt.show()
         
-        def closefigure(self,figure):
-            plt.close(fig=figure)
+    def closefigure(self,figure):
+        plt.close(fig=figure)
+        
 #############################################################################
 if __name__ == "__main__":
     arduino=Arduino.Arduino('COM3',9600) #open the port

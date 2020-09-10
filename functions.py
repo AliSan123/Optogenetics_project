@@ -237,7 +237,7 @@ def getKd(power_data,current_data):
 
 def getPowerFromCalibration(cal_energy_list,cal_power_density,new_energy_list,beam_diameter):
     p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
-    popt,pcov=scipy.optimize.curve_fit(sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
+    popt,pcov=scipy.optimize.curve_fit(sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox', maxfev=5000)
     x=new_energy_list
     a=popt[0]
     b=popt[1]
@@ -248,10 +248,9 @@ def getPowerFromCalibration(cal_energy_list,cal_power_density,new_energy_list,be
     return new_Power_Density, new_Power
 
 def convertPowerToEnergy(cal_energy_list,cal_power_density,new_power_list,beam_diameter):
-    # p0=[max(cal_power_density), np.median(cal_energy_list),1,min(cal_power_density)] # this is an mandatory initial guess
     p0=[35, 15,1,min(cal_power_density)] # this is an mandatory initial guess
     
-    popt,pcov=scipy.optimize.curve_fit(inverse_sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox')
+    popt,pcov=scipy.optimize.curve_fit(inverse_sigmoid,cal_energy_list,cal_power_density,p0,method='dogbox',maxfev=5000)
     y=new_power_list/(np.pi*(beam_diameter/2)**2) #convert power mW to power density
     a=popt[0]
     b=popt[1]
@@ -267,22 +266,14 @@ def getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,beam_diam
     energy_list=convertPowerToEnergy(cal_energy_list,cal_power_density,power_list,beam_diameter)
     return energy_list
 
-# MRR_in_kHz=['100','200','400','500']
-# MRR_in_kHz=np.array(MRR_in_kHz)
-# MRR_in_kHz_=MRR_in_kHz.astype(np.float)
-# power_list=[]
-# for val in range(len(MRR_in_kHz)):
-#     power=(MRR_in_kHz_*2)**0.5
-#     power_list.append(power)
-
 
 if __name__=='__main__':  
 #Power calibration
-    file=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\Cell4TCourse.smr'
+    file=r'Cell4TCourse.smr'
     pulse_duration_ms=200# 0.2 seconds
     energy_list=np.linspace(0,1.4,39) # iniitialise a list of energies for testing
     mean_picker_volts=GetMeanVolts(file,pulse_duration_ms,energy_list,dead_time=2,test=True)
-    calibration_fname=r'C:\Users\user\Desktop\2019 - MSc\Project\Dropbox\power_calibration_980nm_8um_spot.dat'
+    calibration_fname=r'power_calibration_980nm_8um_spot.dat'
     Power_density=convert_V_W(mean_picker_volts,500,2,calibration_fname,8) #The constants are set in the GUI
     plt.figure(1)
     plot_data(energy_list,Power_density,'Input RL energy (uJ)','Mean Power Density in sample (mW/um2)',\
@@ -292,7 +283,7 @@ if __name__=='__main__':
     pulse_duration_ms2=5
     min_current_vals=GetCurrent(file,pulse_duration_ms2,energy_list,divisor=50,dead_time=2,test=True)
     current_density=min_current_vals/(np.pi*(8/2)**2) # beam diameter is 8 microns
-    cal_file=r'C:\Users\user\Desktop\2019 - MSc\Project\Scripts\Optogenetics_project\Experiments\2020-09-01\2020-09-01_14h35m58\Mean power density in sample vs energy list.csv'
+    cal_file=r'Mean power density in sample vs energy list.csv'
     cal_results=pd.read_csv(cal_file)
     cal_energy_list=cal_results['energy_list']
     cal_power_density=cal_results['Power_density'] 
@@ -304,7 +295,7 @@ if __name__=='__main__':
     print(Kd)
 # Cell experiments - Optimisations
     MRR_in_kHz=[200,400,600,800,1000,1200]
-    energy_list2=getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,8,1) 
+    energy_list2=getEnergiesfromMRR(MRR_in_kHz,Kd,cal_energy_list,cal_power_density,8,1)
     min_current_vals=GetCurrent(file,pulse_duration_ms2,energy_list2,divisor=50,dead_time=2,test=True)
     fig=plt.figure(3)
     ax = Axes3D(fig)
