@@ -5,7 +5,7 @@ Optogenetics studies have gained significant popularity in neuroscience in recen
 # Installation and use
 Clone the repository and execute the MainApp.py script to begin the program. The data to be uploaded is saved in the example folder for testing.
 The requirements.txt file contains an exhaustive list of libraries required, but note that not all of them were actually used. Many were in the same virtual environment used for other projects/ in the development of the program.
-# Cureent phase
+# Current phase
 This project is in the testing phase. Acess to the laboratory was not allowed due to the COVID-19 pandemic and therefore the program was testing as far as possible remotely. Next steps towards deployment would be to test the Coerent module on the laser followed by all other modules and finally the system itself on the cells.
 # Licencing
 This is an open-source project, but any codes or theory utilised in other projects should be referenced.
