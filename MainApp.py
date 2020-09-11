@@ -308,7 +308,7 @@ class TermsOfUse(QDialog):
         webbrowser.open(path)
     
     def OpenReport(self):
-        path=r'https://github.com/AliSan123/Optogenetics_project'
+        path=r'https://github.com/AliSan123/Optogenetics_project/blob/master/Alison%20Sanders%20Py2Pulse%20Final%20Project%20Report%2011-09-2020.pdf'
         webbrowser.open(path)
 
 
